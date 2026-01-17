@@ -1,10 +1,10 @@
 'use client';
 
 import { ErrorModal } from '@/features/common/BaseModal';
-import { createDiaryAction } from '@/features/diary/actions/diary';
 import GlassCard from '@/shared/components/glassCard';
 import { useRouter } from 'next/navigation';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useCreateDiaryMutation } from '../hooks/useCreateDiaryMutation';
 import { useTags } from '../hooks/useTags';
 
 type Polarity = 'POSITIVE' | 'NEGATIVE' | 'UNSET';
@@ -32,6 +32,7 @@ function clampTags(next: string[]) {
 
 export default function DiaryWrite() {
   const { data: tags, isPending } = useTags();
+  const { mutate, isPending: diaryPending, error } = useCreateDiaryMutation();
 
   const router = useRouter();
 
@@ -40,13 +41,14 @@ export default function DiaryWrite() {
   const [text, setText] = useState('');
   const [tagOpen, setTagOpen] = useState(false);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isError, setIsError] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  //  error는 "진짜 실패"만 들어옴 (ok=false 포함)
+  const errorMessage =
+    error instanceof Error ? error.message : '에러가 발생했습니다.';
 
   const canSubmit = useMemo(() => {
-    return text.trim().length > 0 && polarity && !isSubmitting;
-  }, [text, polarity, isSubmitting]);
+    return text.trim().length > 0 && polarity && !diaryPending;
+  }, [text, polarity, diaryPending]);
 
   const toggleTag = (tagId: string) => {
     setSelectedTags((prev) => {
@@ -57,27 +59,21 @@ export default function DiaryWrite() {
     });
   };
 
-  const submit = async () => {
+  const submit = () => {
     if (!canSubmit) return;
-    setIsSubmitting(true);
-    try {
-      const res = await createDiaryAction({
-        entry_date: new Date().toISOString().slice(0, 10),
-        polarity,
-        content: text,
-        intensity,
-        tag_ids: selectedTags,
-      });
-      if (res.ok) {
-        router.replace('/starLoad');
-      } else {
-        setIsError(true);
-        setErrorMessage(res?.error ?? '에러가 발생했습니다.');
-      }
-    } finally {
-      setIsSubmitting(false);
-    }
+
+    mutate({
+      entry_date: new Date().toISOString().slice(0, 10),
+      polarity,
+      content: text,
+      intensity,
+      tag_ids: selectedTags,
+    });
   };
+
+  useEffect(() => {
+    setIsError(!!error);
+  }, [error]);
 
   return (
     <div className="relative min-h-[100svh] overflow-y-auto">

@@ -1,26 +1,28 @@
 'use server';
-import { makeRequestId } from '@/lib';
+import { Errors, makeRequestId, mapSupabaseError } from '@/lib';
+import { Result } from '@/lib/result/result';
+import { ActionErr, toActionErr } from '@/lib/result/toActionErr';
 import { createServerSupabaseClientReadOnly } from '@/utils/supabase/server';
 
-type CreateDiaryInput = {
-  entry_date: string;
-  polarity: 'POSITIVE' | 'NEGATIVE' | 'UNSET';
-  content: string;
-  intensity: number;
-  tag_ids?: string[]; // uuid[]
-};
-
-export async function createDiaryAction(input: CreateDiaryInput) {
+export async function createDiaryAction(
+  input: CreateDiaryInput
+): Promise<Result<CreateDiaryData, ActionErr>> {
   const supabase = await createServerSupabaseClientReadOnly();
   const requestId = makeRequestId();
 
-  const { data: auth } = await supabase.auth.getUser();
-  if (!auth?.user)
-    return { ok: false as const, error: 'unauthorized' as const };
+  const { data, error: authErr } = await supabase.auth.getUser();
+  const authUser = data.user;
+
+  if (authErr || !authUser) {
+    return {
+      ok: false,
+      ...toActionErr(Errors.unauthorized('unauthorized'), requestId),
+    };
+  }
 
   try {
     const { data, error } = await supabase.rpc('create_diary_entry', {
-      p_auth_user_id: auth.user.id,
+      p_auth_user_id: authUser.id,
       p_entry_date: input.entry_date,
       p_polarity: input.polarity,
       p_content: input.content,
@@ -28,49 +30,48 @@ export async function createDiaryAction(input: CreateDiaryInput) {
       p_tag_ids: input.tag_ids ?? [],
     });
 
-    if (error) return { ok: false as const, error: error.message };
+    if (error) {
+      return { ok: false, ...toActionErr(mapSupabaseError(error), requestId) };
+    }
 
-    return { ok: true as const, data };
-  } catch (err) {
-    return {
-      ok: false,
-      code: 'INTERNAL_ERROR',
-      message: (err as Error).message,
-      requestId,
-    };
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, ...toActionErr(e, requestId) };
   }
 }
-export async function getDiaryByDateAction(date: string) {
+
+type GetDiaryByDateData = { exists: boolean };
+
+export async function getDiaryByDateAction(
+  entryDate: string // YYYY-MM-DD
+): Promise<Result<GetDiaryByDateData, ActionErr>> {
   const supabase = await createServerSupabaseClientReadOnly();
   const requestId = makeRequestId();
 
-  const { data: auth, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !auth?.user) {
-    return { ok: false as const, error: 'unauthorized' as const };
-  }
+  const { data, error: authErr } = await supabase.auth.getUser();
+  const authUser = data.user;
 
-  const start = new Date(date);
-  start.setHours(0, 0, 0, 0);
-
-  const end = new Date(date);
-  end.setHours(24, 0, 0, 0);
-
-  try {
-    const { data, error } = await supabase
-      .from('diary')
-      .select('diary_id')
-      .eq('auth_user_id', auth.user.id)
-      .gte('created_at', start.toISOString())
-      .lt('created_at', end.toISOString());
-
-    if (error) return { ok: false as const, error: error.message };
-    return { ok: true as const, data };
-  } catch (err) {
+  if (authErr || !authUser) {
     return {
       ok: false,
-      code: 'INTERNAL_ERROR',
-      message: (err as Error).message,
-      requestId,
+      ...toActionErr(Errors.unauthorized('unauthorized'), requestId),
     };
+  }
+
+  try {
+    const { count, error } = await supabase
+      .from('diary')
+      .select('diary_id', { count: 'exact', head: true })
+      .eq('auth_user_id', authUser.id)
+      .eq('entry_date', entryDate)
+      .is('deleted_at', null);
+
+    if (error) {
+      return { ok: false, ...toActionErr(mapSupabaseError(error), requestId) };
+    }
+
+    return { ok: true, data: { exists: (count ?? 0) > 0 } };
+  } catch (e) {
+    return { ok: false, ...toActionErr(e, requestId) };
   }
 }

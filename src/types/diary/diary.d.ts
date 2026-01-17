@@ -27,3 +27,19 @@ type TDiaryItem = {
   tags: TTag[];
   updated_at: string;
 };
+
+type CreateDiaryInput = {
+  entry_date: string;
+  polarity: 'POSITIVE' | 'NEGATIVE' | 'UNSET';
+  content: string;
+  intensity: number;
+  tag_ids?: string[]; // uuid[]
+};
+
+type CreateDiaryData = unknown; // rpc 리턴 타입 알면 구체화
+
+type CreateDiaryError = {
+  message: string;
+  code: 'UNAUTHORIZED' | 'RPC_ERROR' | 'INTERNAL_ERROR';
+  requestId: string;
+};
