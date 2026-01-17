@@ -1,29 +1,35 @@
-import "server-only";
+import 'server-only';
 
-import { createServerSupabaseClient } from "@/utils/supabase/server";
+import { createServerSupabaseClient } from '@/utils/supabase/server';
+import { Errors, mapSupabaseError } from '@/lib';
 
-export type Polarity = "POSITIVE" | "NEGATIVE" | "UNSET";
-
+export type Polarity = 'POSITIVE' | 'NEGATIVE' | 'UNSET';
 export type QueryDiariesParams = {
-  /** YYYY-MM */
   month?: string | null;
-  /** YYYY-MM-DD */
   date?: string | null;
-  /** 검색어 */
   q?: string | null;
   polarity?: Polarity | null;
-  /** ["1","2"] 형태 (string 권장: querystring에서 그대로 받기 쉬움) */
   tagIds?: string[];
-  /** 1~50 */
   limit?: number;
-  /** created_at ISO cursor */
   cursor?: string | null;
 };
 
-export type DiaryTag = { tag_id: string; tag_name: string };
+type Row = {
+  diary_id: string;
+  entry_date: string;
+  content: string | null;
+  emotion_polarity: Polarity;
+  emotion_intensity: number | null;
+  created_at: string;
+  updated_at: string | null;
+  diary_tags: Array<{
+    tag: { tag_id: string; tag_name: string } | null;
+  }> | null;
+};
 
+export type DiaryTag = { tag_id: string; tag_name: string };
 export type DiaryListItem = {
-  diary_id: string | number;
+  diary_id: string;
   entry_date: string;
   content: string;
   emotion_polarity: Polarity;
@@ -38,27 +44,18 @@ export type QueryDiariesResult = {
   nextCursor: string | null;
 };
 
-function isYYYYMM(v: string) {
-  return /^\d{4}-\d{2}$/.test(v);
-}
-
-function isYYYYMMDD(v: string) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(v);
-}
-
 function clampLimit(v: unknown, fallback = 20) {
   const n = Number(v ?? fallback);
-  if (Number.isNaN(n)) return fallback;
+  if (!Number.isFinite(n)) return fallback;
   return Math.min(Math.max(n, 1), 50);
 }
 
-/**
- * diaries 조회 공통 함수 (Server-only)
- * - 인증(로그인) + user_id 매핑
- * - month/date/q/polarity/cursor/limit 필터
- * - tags 조인 포함
- * - tagIds는 Supabase 쿼리 제한 때문에 서버에서 2단계 필터링(MVP)
- */
+function isYYYYMM(v: string) {
+  return /^\d{4}-\d{2}$/.test(v);
+}
+function isYYYYMMDD(v: string) {
+  return /^\d{4}-\d{2}-\d{2}$/.test(v);
+}
 
 export async function queryDiaries(
   params: QueryDiariesParams
@@ -66,43 +63,27 @@ export async function queryDiaries(
   const supabase = await createServerSupabaseClient();
 
   // 1) 로그인 체크
-  const {
-    data: { user: authUser },
-    error: authErr,
-  } = await supabase.auth.getUser();
-
-  if (authErr || !authUser) {
-    // route.ts / action 쪽에서 공통 처리할 수 있게 Error throw
-    throw new Error("Unauthorized");
-  }
-
-  // 2) public.users에서 user_id 매핑
-  const { data: profile, error: profileErr } = await supabase
-    .from("users")
-    .select("user_id")
-    .eq("auth_user_id", authUser.id)
-    .maybeSingle();
-
-  if (profileErr || !profile?.user_id) {
-    throw new Error("User profile not found");
-  }
-
-  const userId = profile.user_id as number;
+  const { data, error: authErr } = await supabase.auth.getUser();
+  const authUser = data.user;
+  if (authErr || !authUser) throw Errors.unauthorized();
 
   const month = params.month ?? null;
   const date = params.date ?? null;
-  const q = (params.q ?? "").trim();
+  const q = (params.q ?? '').trim();
   const polarity = params.polarity ?? null;
   const tagIds = params.tagIds ?? [];
   const limit = clampLimit(params.limit, 20);
   const cursor = params.cursor ?? null;
 
-  // 3) diary 기본 쿼리 (tags join 포함)
+  // tag filter MVP 보정: tagIds 있을 때는 넉넉히 가져왔다가 필터링
+  const fetchLimit = tagIds.length > 0 ? Math.min(limit * 5, 200) : limit;
+
   let query = supabase
-    .from("diary")
+    .from('diary')
     .select(
       `
         diary_id,
+        auth_user_id,
         entry_date,
         content,
         emotion_polarity,
@@ -117,88 +98,81 @@ export async function queryDiaries(
         )
       `
     )
-    .eq("user_id", userId)
-    .is("deleted_at", null)
-    .order("entry_date", { ascending: false })
-    .order("created_at", { ascending: false })
-    .limit(limit);
+    .eq('auth_user_id', authUser.id)
+    .is('deleted_at', null)
+    .order('entry_date', { ascending: false })
+    .order('created_at', { ascending: false })
+    .limit(fetchLimit);
 
-  // month 필터 (entry_date 기준)
   if (month && isYYYYMM(month)) {
-    const [y, m] = month.split("-").map(Number);
+    const [y, m] = month.split('-').map(Number);
     const start = new Date(Date.UTC(y, m - 1, 1));
-    const end = new Date(Date.UTC(y, m, 1)); // 다음 달 1일
+    const end = new Date(Date.UTC(y, m, 1));
 
     query = query
-      .gte("entry_date", start.toISOString().slice(0, 10))
-      .lt("entry_date", end.toISOString().slice(0, 10));
+      .gte('entry_date', start.toISOString().slice(0, 10))
+      .lt('entry_date', end.toISOString().slice(0, 10));
   }
 
   // date 필터
   if (date && isYYYYMMDD(date)) {
-    query = query.eq("entry_date", date);
+    query = query.eq('entry_date', date);
   }
 
   // content 검색
   if (q) {
-    query = query.ilike("content", `%${q}%`);
+    query = query.ilike('content', `%${q}%`);
   }
 
   // polarity 필터
-  if (polarity && ["POSITIVE", "NEGATIVE", "UNSET"].includes(polarity)) {
-    query = query.eq("emotion_polarity", polarity);
+  if (polarity && ['POSITIVE', 'NEGATIVE', 'UNSET'].includes(polarity)) {
+    query = query.eq('emotion_polarity', polarity);
   }
 
   // cursor pagination: created_at 기준
   if (cursor) {
-    query = query.lt("created_at", cursor);
+    query = query.lt('created_at', cursor);
   }
 
   const { data: diaries, error: diaryErr } = await query;
-  if (diaryErr) {
-    throw new Error(diaryErr.message);
-  }
+  if (diaryErr) throw mapSupabaseError(diaryErr);
 
-  // 4) tagIds 필터 (MVP: 서버에서 후처리)
-  let filtered: any[] = diaries ?? [];
+  // tagIds AND 필터
+  let filtered: Row[] = (diaries ?? []) as unknown as Row[];
   if (tagIds.length > 0) {
     const tagSet = new Set(tagIds.map(String));
-    filtered = filtered.filter((d: any) => {
+    filtered = filtered.filter((d: Row) => {
       const have = new Set(
-        (d.diary_tags ?? [])
-          .map((x: any) => String(x?.tag?.tag_id))
-          .filter(Boolean)
+        (d.diary_tags ?? []).map((x) => String(x?.tag?.tag_id)).filter(Boolean)
       );
-      // AND 조건(모든 tag 포함). OR 조건이면 some으로 변경
-      for (const id of tagSet) {
-        if (!have.has(id)) return false;
-      }
+      for (const id of tagSet) if (!have.has(id)) return false;
       return true;
     });
   }
 
-  // 5) 응답 형태 정리
-  const items: DiaryListItem[] = filtered.map((d: any) => ({
-    diary_id: d.diary_id,
-    entry_date: d.entry_date,
-    content: d.content,
+  // 반환은 limit만
+  filtered = filtered.slice(0, limit);
+
+  const items: DiaryListItem[] = filtered.map((d: Row) => ({
+    diary_id: String(d.diary_id),
+    entry_date: String(d.entry_date),
+    content: String(d.content ?? ''),
     emotion_polarity: d.emotion_polarity,
     emotion_intensity: d.emotion_intensity,
-    created_at: d.created_at,
-    updated_at: d.updated_at,
+    created_at: String(d.created_at),
+    updated_at: d.updated_at ? String(d.updated_at) : null,
     tags: (d.diary_tags ?? [])
-      .map((x: any) => x?.tag)
-      .filter(Boolean)
-      .map((t: any) => ({
+      .map((x) => x?.tag)
+      .filter((t): t is DiaryTag => !!t)
+      .map((t) => ({
         tag_id: String(t.tag_id),
         tag_name: String(t.tag_name),
       })),
   }));
 
+  // nextCursor는 “실제로 반환한 마지막 아이템” 기준이 더 자연스러움
   const nextCursor =
-    items.length > 0
-      ? String((filtered[filtered.length - 1] as any).created_at)
-      : null;
+    items.length > 0 ? items[items.length - 1].created_at : null;
 
   return { items, nextCursor };
 }
