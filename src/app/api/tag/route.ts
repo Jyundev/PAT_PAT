@@ -1,22 +1,23 @@
-import { jsonError, jsonOk, makeRequestId, mapSupabaseError } from "@/lib";
-import { createServerSupabaseClientReadOnly } from "@/utils/supabase/server";
+import { TagsSchema } from '@/features/diary/schemas/tag.schema';
+import { getTagsServer } from '@/features/diary/services/tags.server';
+import { jsonError, jsonOk, makeRequestId } from '@/lib';
+import { NextResponse } from 'next/server';
+import { ZodError } from 'zod';
 
 export async function GET() {
   const requestId = makeRequestId();
   try {
-    const supabase = await createServerSupabaseClientReadOnly();
+    const tags = await getTagsServer();
+    const safe = TagsSchema.parse(tags);
 
-    const { data, error } = await supabase
-      .from("tag")
-      .select("tag_id, tag_name, tag_type, order_no, is_active")
-      .eq("is_active", true)
-      .order("order_no", { ascending: true, nullsFirst: false })
-      .order("tag_name", { ascending: true });
-
-    if (error) throw mapSupabaseError(error);
-
-    return jsonOk(data, { count: data.length }, requestId);
+    return jsonOk(safe, { count: safe.length }, requestId);
   } catch (err) {
+    if (err instanceof ZodError) {
+      return NextResponse.json(
+        { message: 'Invalid tags payload', issues: err.issues },
+        { status: 500 }
+      );
+    }
     return jsonError(err as Error, requestId);
   }
 }

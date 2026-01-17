@@ -1,13 +1,11 @@
 'use client';
 
+import { ErrorModal } from '@/features/common/BaseModal';
 import { createDiaryAction } from '@/features/diary/actions/diary';
 import GlassCard from '@/shared/components/glassCard';
-import { useDiaryWrite } from '@/features/diary/hooks/useDiaryWrite';
 import { useRouter } from 'next/navigation';
 import { useMemo, useState } from 'react';
-import DiarySkeleton from './skeleton';
-import { error } from 'console';
-import { ErrorModal } from '@/features/common/BaseModal';
+import { useTags } from '../hooks/useTags';
 
 type Polarity = 'POSITIVE' | 'NEGATIVE' | 'UNSET';
 
@@ -33,7 +31,8 @@ function clampTags(next: string[]) {
 }
 
 export default function DiaryWrite() {
-  const { tags, tagLoading } = useDiaryWrite();
+  const { data: tags, isPending } = useTags();
+
   const router = useRouter();
 
   const [polarity, setPolarity] = useState<Polarity>('UNSET');
@@ -80,7 +79,6 @@ export default function DiaryWrite() {
     }
   };
 
-  if (tagLoading) return <DiarySkeleton />;
   return (
     <div className="relative min-h-[100svh] overflow-y-auto">
       {/* 배경 */}
@@ -136,8 +134,8 @@ export default function DiaryWrite() {
                     {text.trim().length === 0
                       ? '한 문장만 남겨도 충분해요.'
                       : text.length > 150
-                      ? '천천히 써도 괜찮아요.'
-                      : '짧아도 좋아요.'}
+                        ? '천천히 써도 괜찮아요.'
+                        : '짧아도 좋아요.'}
                   </p>
                 </div>
               </div>
@@ -206,8 +204,11 @@ export default function DiaryWrite() {
                 bg-white/4 border border-white/10
                 text-[15px] text-white/90
                 placeholder:text-white/40
-                focus:border-white/20 focus:bg-white/6 transition
-              "
+                focus:outline-none
+                focus:ring-0
+                focus:border-white/20 focus:bg-white/6
+                transition
+"
               />
 
               <div className="mt-2 flex justify-between text-[12px] text-white/50">
@@ -232,7 +233,7 @@ export default function DiaryWrite() {
 
                 {tagOpen && (
                   <div className="mt-2 flex flex-wrap gap-2">
-                    {tags.map((tag: TTag) => {
+                    {tags?.map((tag: TTag) => {
                       const selected = selectedTags.includes(tag.tag_id);
                       return (
                         <button
