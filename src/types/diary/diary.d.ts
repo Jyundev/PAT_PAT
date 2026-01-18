@@ -28,18 +28,21 @@ type TDiaryItem = {
   updated_at: string;
 };
 
-type CreateDiaryInput = {
-  entry_date: string;
+type UpsertDiaryInput = {
+  entry_date?: string;
+  diary_id?: string;
   polarity: 'POSITIVE' | 'NEGATIVE' | 'UNSET';
   content: string;
   intensity: number;
   tag_ids?: string[]; // uuid[]
 };
 
-type CreateDiaryData = unknown; // rpc 리턴 타입 알면 구체화
-
-type CreateDiaryError = {
-  message: string;
-  code: 'UNAUTHORIZED' | 'RPC_ERROR' | 'INTERNAL_ERROR';
-  requestId: string;
+type UpsertDiaryData = {
+  ok: true;
+  auth_user_id: string;
+  period_id: string;
+  diary_id: string;
+  star_id: string;
+  polarity: 'POSITIVE' | 'NEGATIVE' | 'UNSET';
+  tag_count: number;
 };

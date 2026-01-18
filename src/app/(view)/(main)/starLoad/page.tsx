@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import ConstellationSvg from "@/shared/components/ConstellationSvg";
-import EntryModal from "@/shared/components/EntryModal";
+import ConstellationSvg from '@/shared/components/ConstellationSvg';
+import EntryModal from '@/shared/components/EntryModal';
 import {
   displayDate,
   getZodiacNameKo,
@@ -10,10 +10,10 @@ import {
   loadTemplates,
   toDateString,
   type Pt,
-} from "@/lib/zodiac";
-import { Entry, getEntryByDate, loadEntriesByRange } from "@/utils/entries";
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useMemo, useState } from "react";
+} from '@/lib/zodiac';
+import { Entry, getEntryByDate, loadEntriesByRange } from '@/utils/entries';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 export default function Page() {
   const router = useRouter();
@@ -27,10 +27,10 @@ export default function Page() {
 
   // 디버깅
   useEffect(() => {
-    console.log("[starLoad] Sign:", sign);
-    console.log("[starLoad] Season range:", seasonRange);
-    console.log("[starLoad] Days count:", seasonRange.daysCount);
-    console.log("[starLoad] Dates:", seasonRange.dates.slice(0, 5), "...");
+    console.log('[starLoad] Sign:', sign);
+    console.log('[starLoad] Season range:', seasonRange);
+    console.log('[starLoad] Days count:', seasonRange.daysCount);
+    console.log('[starLoad] Dates:', seasonRange.dates.slice(0, 5), '...');
   }, [sign, seasonRange]);
 
   // 앵커 포인트 (별자리 템플릿에서 가져오기)
@@ -50,14 +50,14 @@ export default function Page() {
     const loadAnchorPoints = async () => {
       try {
         const templates = await loadTemplates();
-        console.log("[starLoad] Loaded templates:", templates.length);
+        console.log('[starLoad] Loaded templates:', templates.length);
 
         // API는 star_code를 사용하지만 타입은 zodiac_code를 기대
         const template = templates.find(
           (t: any) => t.zodiac_code === sign || t.star_code === sign
         );
 
-        console.log("[starLoad] Found template for", sign, ":", template);
+        console.log('[starLoad] Found template for', sign, ':', template);
 
         if (template && template.points && template.points.length > 0) {
           // path_index가 있으면 사용, 없으면 points 직접 사용
@@ -65,16 +65,16 @@ export default function Page() {
             ? template.path_index.map((i: number) => template.points[i])
             : template.points;
           console.log(
-            "[starLoad] Anchor points:",
+            '[starLoad] Anchor points:',
             path.length,
             path.slice(0, 3)
           );
           setAnchorPoints(path);
         } else {
-          console.warn("[starLoad] Template not found or no points");
+          console.warn('[starLoad] Template not found or no points');
         }
       } catch (error) {
-        console.error("Failed to load zodiac template:", error);
+        console.error('Failed to load zodiac template:', error);
         // 기본값 유지
       }
     };
@@ -100,7 +100,7 @@ export default function Page() {
         );
         setEntries(loaded);
       } catch (error) {
-        console.error("Failed to load entries:", error);
+        console.error('Failed to load entries:', error);
       } finally {
         setLoading(false);
       }
@@ -130,9 +130,9 @@ export default function Page() {
   // 수정하기 (글 작성 페이지로 이동)
   const handleEdit = useCallback(() => {
     if (selectedDate) {
-      router.push(`/diary/write?date=${selectedDate}`);
+      router.push(`/diary/editor?date=${selectedDate}`);
     } else {
-      router.push("/diary/write");
+      router.push('/diary/editor');
     }
   }, [selectedDate, router]);
 
@@ -190,7 +190,7 @@ export default function Page() {
           <div className="inline-flex items-center gap-2">
             <span className="chip">이달의 별자리</span>
             <span className="chip chip-soft">
-              {today.toLocaleDateString("ko-KR")}
+              {today.toLocaleDateString('ko-KR')}
             </span>
           </div>
 
@@ -236,7 +236,7 @@ export default function Page() {
         <div className="mt-5">
           <button
             className="cta w-full"
-            onClick={() => router.push("/diary/write")}
+            onClick={() => router.push('/diary/editor')}
           >
             오늘의 별 만들기
             <span className="cta-shimmer" aria-hidden />
