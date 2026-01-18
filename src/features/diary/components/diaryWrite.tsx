@@ -4,8 +4,9 @@ import { ErrorModal } from '@/features/common/BaseModal';
 import GlassCard from '@/shared/components/glassCard';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
-import { useCreateDiaryMutation } from '../hooks/useCreateDiaryMutation';
+import { useDiaryDetail } from '../hooks/useDiaryDetail';
 import { useTags } from '../hooks/useTags';
+import { useUpsertDiaryMutation } from '../hooks/useUpsertDiaryMutation';
 
 type Polarity = 'POSITIVE' | 'NEGATIVE' | 'UNSET';
 
@@ -30,21 +31,46 @@ function clampTags(next: string[]) {
   return Array.from(new Set(next)).slice(0, MAX_TAGS);
 }
 
-export default function DiaryWrite() {
-  const { data: tags, isPending } = useTags();
-  const { mutate, isPending: diaryPending, error } = useCreateDiaryMutation();
+export default function DiaryWrite({ diaryId }: { diaryId?: string }) {
+  const {
+    data: tags,
+    isPending: tagsPending,
+    isError: isTagsError,
+    error: tagsError,
+  } = useTags();
+
+  const {
+    data: diary,
+    isPending: diaryDetailPending,
+    isError: isDiaryDetailError,
+    error: diaryDetailError,
+  } = useDiaryDetail(diaryId);
+
+  const {
+    mutate,
+    isPending: diaryPending,
+    error,
+  } = useUpsertDiaryMutation({ diary_id: diary?.diary_id });
 
   const router = useRouter();
 
-  const [polarity, setPolarity] = useState<Polarity>('UNSET');
-  const [intensity, setIntensity] = useState<number>(3);
-  const [text, setText] = useState('');
+  const [polarity, setPolarity] = useState<Polarity>(
+    diary?.emotion_polarity ?? 'UNSET'
+  );
+  const [intensity, setIntensity] = useState<number>(
+    diary?.emotion_intensity ?? 3
+  );
+  const [text, setText] = useState(diary?.content ?? '');
   const [tagOpen, setTagOpen] = useState(false);
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [selectedTags, setSelectedTags] = useState<string[]>(
+    diary?.tags?.map((t) => t.tag_id) ?? []
+  );
   const [isError, setIsError] = useState(false);
-  //  error는 "진짜 실패"만 들어옴 (ok=false 포함)
   const errorMessage =
-    error instanceof Error ? error.message : '에러가 발생했습니다.';
+    error?.message ||
+    tagsError?.message ||
+    diaryDetailError?.message ||
+    '에러가 발생했습니다.';
 
   const canSubmit = useMemo(() => {
     return text.trim().length > 0 && polarity && !diaryPending;
@@ -72,8 +98,8 @@ export default function DiaryWrite() {
   };
 
   useEffect(() => {
-    setIsError(!!error);
-  }, [error]);
+    setIsError(!!error || isTagsError || isDiaryDetailError);
+  }, [error, isTagsError, isDiaryDetailError]);
 
   return (
     <div className="relative min-h-[100svh] overflow-y-auto">

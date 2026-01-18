@@ -1,7 +1,7 @@
-import { TagsSchema } from '../schemas/tag.schema';
+import { HomeSummarySchema } from '../schemas/home.schema';
 
-export async function getTagsClient(): Promise<TTag[]> {
-  const res = await fetch('/api/tags', {
+export async function getHomeSummaryClient(): Promise<HomeSummary> {
+  const res = await fetch('/api/home/summary', {
     method: 'GET',
     credentials: 'include', // 쿠키 기반이면 안전하게 포함
     cache: 'no-store', // TanStack Query가 캐시하므로 브라우저 HTTP 캐시는 꺼도 됨
@@ -13,10 +13,10 @@ export async function getTagsClient(): Promise<TTag[]> {
   }
 
   const json = await res.json();
-  const parsed = TagsSchema.safeParse(json);
+  const parsed = HomeSummarySchema.safeParse(json);
 
   if (!parsed.success) {
-    throw new Error('Tags payload schema mismatch');
+    throw new Error('Home summary payload schema mismatch');
   }
   return parsed.data;
 }

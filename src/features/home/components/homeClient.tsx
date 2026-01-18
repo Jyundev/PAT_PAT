@@ -1,53 +1,51 @@
-"use client";
+'use client';
 
-import { useHomeSummary } from "@/features/home/hooks/useHomeSummary";
-import GlassCard from "@/shared/components/glassCard";
-import { data } from "framer-motion/client";
-import { useRouter } from "next/navigation";
-import { useMemo } from "react";
-import HomeSkeleton from "./homeSkeleton";
-import Pill from "./pill";
-import PrimaryButton from "./primaryButton";
-import SecondaryButton from "./secondaryButton";
+import { useHomeSummary } from '@/features/home/hooks/useHomeSummary';
+import GlassCard from '@/shared/components/glassCard';
+import { useRouter } from 'next/navigation';
+import { useMemo } from 'react';
+import HomeSkeleton from './homeSkeleton';
+import Pill from './pill';
+import PrimaryButton from './primaryButton';
+import SecondaryButton from './secondaryButton';
+import { ErrorModal } from '@/features/common/BaseModal';
 
 function pct(value: number, max: number) {
   const v = Math.max(0, Math.min(max, value));
   return (v / max) * 100;
 }
 function getTimeMessage(hour: number) {
-  if (hour >= 5 && hour < 11) return "오늘이 천천히 시작되고 있어요.";
-  if (hour >= 11 && hour < 17) return "오늘이 차분히 흘러가고 있어요.";
-  if (hour >= 17 && hour < 22) return "오늘이 정리되는 시간이에요.";
-  return "오늘이 조용히 마무리되고 있어요.";
+  if (hour >= 5 && hour < 11) return '오늘이 천천히 시작되고 있어요.';
+  if (hour >= 11 && hour < 17) return '오늘이 차분히 흘러가고 있어요.';
+  if (hour >= 17 && hour < 22) return '오늘이 정리되는 시간이에요.';
+  return '오늘이 조용히 마무리되고 있어요.';
 }
 
 export default function HomeClient() {
-  const { data: result, isLoading } = useHomeSummary();
+  const { data: result, isPending, isError, error } = useHomeSummary();
 
   const router = useRouter();
 
-  const headerTitle = `${result?.data?.profile?.nickname ?? "사용자"} 님,`;
-  const headerSubtitle = "오늘을 한 줄로 정리해볼까요?";
+  const headerTitle = `${result?.profile?.nickname ?? '사용자'} 님,`;
+  const headerSubtitle = '오늘을 한 줄로 정리해볼까요?';
 
   const todayTitle = useMemo(() => {
-    return result?.data?.starCount
-      ? "오늘은 조용히 남겨졌어요"
-      : "오늘은 아직 기록이 없어요";
-  }, [result?.data?.starCount]);
+    return result?.starCount
+      ? '오늘은 조용히 남겨졌어요'
+      : '오늘은 아직 기록이 없어요';
+  }, [result?.starCount]);
 
   const todayDesc = useMemo(() => {
-    return result?.data?.starCount
+    return result?.starCount
       ? `별이 생성됐어요.`
-      : "하루가 지나가기 전, 한 줄을 남길 수 있어요.";
-  }, [result?.data?.starCount]);
+      : '하루가 지나가기 전, 한 줄을 남길 수 있어요.';
+  }, [result?.starCount]);
 
   const todaySkyLabel = useMemo(() => {
-    return result?.data?.starCount
-      ? "오늘의 하늘 · 빛남"
-      : "오늘의 하늘 · 고요함";
-  }, [result?.data?.starCount]);
+    return result?.starCount ? '오늘의 하늘 · 빛남' : '오늘의 하늘 · 고요함';
+  }, [result?.starCount]);
 
-  if (isLoading) {
+  if (isPending) {
     return <HomeSkeleton />;
   }
 
@@ -109,14 +107,10 @@ export default function HomeClient() {
         <div className="mt-4">
           <PrimaryButton
             onClick={() =>
-              result?.data?.isDiary
-                ? router.push("/diary/edit")
-                : router.push("/diary/write")
+              router.push(`/diary/editor?diaryId=${result?.diaryId}`)
             }
           >
-            {result?.data?.isDiary
-              ? "오늘 기록 수정하기"
-              : "한 줄이면 충분해요"}
+            {result?.isDiary ? '오늘 기록 수정하기' : '한 줄이면 충분해요'}
           </PrimaryButton>
         </div>
 
@@ -128,7 +122,7 @@ export default function HomeClient() {
                 이번 주 돌아보기
               </div>
               <button
-                onClick={() => router.push("/stats")}
+                onClick={() => router.push('/stats')}
                 className="h-9 rounded-xl px-3 text-[13px] text-white/80 bg-white/6 border border-white/12 hover:bg-white/10 transition"
               >
                 자세히
@@ -136,20 +130,20 @@ export default function HomeClient() {
             </div>
 
             <div className="mt-3 text-white/70 text-[13px] leading-snug">
-              {result?.data?.starCount
-                ? `이번 주에 별 ${result?.data?.starCount}개가 남겨졌어요`
-                : "이번 주는 아직 기록이 없어요"}
+              {result?.starCount
+                ? `이번 주에 별 ${result?.starCount}개가 남겨졌어요`
+                : '이번 주는 아직 기록이 없어요'}
             </div>
 
             <div className="mt-4">
               <div className="flex items-center justify-between text-[12px] text-white/55">
                 <span>기록한 날</span>
-                <span>{result?.data?.diaryCount}/7</span>
+                <span>{result?.diaryCount ?? 0}/7</span>
               </div>
               <div className="mt-2 h-2 rounded-full bg-white/8 overflow-hidden">
                 <div
                   className="h-full rounded-full bg-white/40"
-                  style={{ width: `${pct(result?.data?.diaryCount, 7)}%` }}
+                  style={{ width: `${pct(result?.diaryCount ?? 0, 7)}%` }}
                 />
               </div>
             </div>
@@ -158,13 +152,14 @@ export default function HomeClient() {
 
         {/* (4) 보조 바로가기 */}
         <div className="mt-4 grid grid-cols-2 gap-3">
-          <SecondaryButton onClick={() => router.push("/diary-archive")}>
+          <SecondaryButton onClick={() => router.push('/diary-archive')}>
             기록 모아보기
           </SecondaryButton>
-          <SecondaryButton onClick={() => router.push("/starLoad")}>
+          <SecondaryButton onClick={() => router.push('/starLoad')}>
             별자리 보기
           </SecondaryButton>
         </div>
+        <ErrorModal open={isError} title={error?.message} onClose={() => {}} />
       </section>
     </div>
   );

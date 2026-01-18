@@ -1,5 +1,5 @@
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 
 export default function BottomNav() {
   const pathname = usePathname();
@@ -19,7 +19,7 @@ export default function BottomNav() {
             <Link
               href="/home"
               className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg ${
-                pathname === "/home" ? "bg-white/8" : ""
+                pathname === '/home' ? 'bg-white/8' : ''
               }`}
             >
               <HomeIcon />
@@ -28,9 +28,9 @@ export default function BottomNav() {
           </li>
           <li>
             <Link
-              href="/diary/write"
+              href="/diary/editor"
               className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg  ${
-                pathname === "/diary/write" ? "bg-white/8" : ""
+                pathname === '/diary/editor' ? 'bg-white/8' : ''
               } `}
             >
               <NoteIcon />
@@ -41,7 +41,7 @@ export default function BottomNav() {
             <Link
               href="/profile"
               className={`flex flex-col items-center gap-1 px-3 py-1 rounded-lg  ${
-                pathname === "/profile" ? "bg-white/8" : ""
+                pathname === '/profile' ? 'bg-white/8' : ''
               } `}
             >
               <UserIcon />

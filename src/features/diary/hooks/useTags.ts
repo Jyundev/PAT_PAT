@@ -2,11 +2,11 @@
 
 import { tagsKeys } from '@/features/diary/queries/tags';
 import { useQuery } from '@tanstack/react-query';
-import { getTagsClient } from '../services/tags.clieny';
+import { getTagsClient } from '../services/tags.client';
 
 export function useTags() {
   return useQuery({
-    queryKey: tagsKeys.all,
+    queryKey: tagsKeys.list(),
     queryFn: getTagsClient,
 
     // tags는 자주 안 바뀌는 “준정적 데이터”라 길게 줘도 됨
