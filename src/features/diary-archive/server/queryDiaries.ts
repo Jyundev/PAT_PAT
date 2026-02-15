@@ -1,7 +1,7 @@
 import 'server-only';
 
-import { createServerSupabaseClient } from '@/utils/supabase/server';
 import { Errors, mapSupabaseError } from '@/lib';
+import { createServerSupabaseClient } from '@/utils/supabase/server';
 
 export type Polarity = 'POSITIVE' | 'NEGATIVE' | 'UNSET';
 export type QueryDiariesParams = {

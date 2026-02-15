@@ -125,12 +125,12 @@ export default function HomeClient() {
               <div className="text-white/90 text-[15px] font-semibold">
                 이번 주 돌아보기
               </div>
-              <button
+              {/* <button
                 onClick={() => router.push('/stats')}
                 className="h-9 rounded-xl px-3 text-[13px] text-white/80 bg-white/6 border border-white/12 hover:bg-white/10 transition"
               >
                 자세히
-              </button>
+              </button> */}
             </div>
 
             <div className="mt-3 text-white/70 text-[13px] leading-snug">
