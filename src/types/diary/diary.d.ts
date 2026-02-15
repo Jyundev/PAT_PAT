@@ -16,16 +16,15 @@ type Journal = {
   tags?: string[];
   pinned?: boolean;
 };
-
 type TDiaryItem = {
   content: string;
   created_at: string;
   diary_id: string;
-  emotion_intensity: 3;
-  emotion_polarity: number;
+  emotion_intensity: number | null;
+  emotion_polarity: string;
   entry_date: string;
   tags: TTag[];
-  updated_at: string;
+  updated_at: string | null;
 };
 
 type UpsertDiaryInput = {

@@ -1,5 +1,6 @@
 'use client';
 
+import { ErrorModal } from '@/features/common/BaseModal';
 import { useHomeSummary } from '@/features/home/hooks/useHomeSummary';
 import GlassCard from '@/shared/components/glassCard';
 import { useRouter } from 'next/navigation';
@@ -8,7 +9,6 @@ import HomeSkeleton from './homeSkeleton';
 import Pill from './pill';
 import PrimaryButton from './primaryButton';
 import SecondaryButton from './secondaryButton';
-import { ErrorModal } from '@/features/common/BaseModal';
 
 function pct(value: number, max: number) {
   const v = Math.max(0, Math.min(max, value));
@@ -107,7 +107,11 @@ export default function HomeClient() {
         <div className="mt-4">
           <PrimaryButton
             onClick={() =>
-              router.push(`/diary/editor?diaryId=${result?.diaryId}`)
+              router.push(
+                result?.diaryId
+                  ? `/diary/editor?diaryId=${result?.diaryId}`
+                  : `/diary/editor`
+              )
             }
           >
             {result?.isDiary ? '오늘 기록 수정하기' : '한 줄이면 충분해요'}
@@ -121,12 +125,12 @@ export default function HomeClient() {
               <div className="text-white/90 text-[15px] font-semibold">
                 이번 주 돌아보기
               </div>
-              <button
+              {/* <button
                 onClick={() => router.push('/stats')}
                 className="h-9 rounded-xl px-3 text-[13px] text-white/80 bg-white/6 border border-white/12 hover:bg-white/10 transition"
               >
                 자세히
-              </button>
+              </button> */}
             </div>
 
             <div className="mt-3 text-white/70 text-[13px] leading-snug">

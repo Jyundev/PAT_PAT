@@ -1,13 +1,12 @@
-"use client";
+'use client';
 
-import { CalendarView } from "@/features/diary-archive/components/calendarView";
-import { DateHeader } from "@/features/diary-archive/components/dateHeader";
-import { JournalCard } from "@/features/diary-archive/components/journalCard";
-import { MonthPicker } from "@/features/diary-archive/components/monthPicker";
-import { ViewToggle } from "@/features/diary-archive/components/viewToggle";
-import { useDiaryList } from "@/features/diary/hooks/useDiaryList";
-import Link from "next/link";
-import { DiaryCollectionPageSkeleton } from "./skeleton/skeleton";
+import { CalendarView } from '@/features/diary-archive/components/calendarView';
+import { DateHeader } from '@/features/diary-archive/components/dateHeader';
+import { JournalCard } from '@/features/diary-archive/components/journalCard';
+import { MonthPicker } from '@/features/diary-archive/components/monthPicker';
+import { ViewToggle } from '@/features/diary-archive/components/viewToggle';
+import { useDiaryList } from '@/features/diary/hooks/useDiaryList';
+import { DiaryCollectionPageSkeleton } from './skeleton/skeleton';
 
 export default function MyDiaryClient() {
   const {
@@ -27,15 +26,17 @@ export default function MyDiaryClient() {
     setView,
   } = useDiaryList();
 
+  const items = diaryMonthData?.items ?? [];
+  const isEmpty = !diaryMonthLoading && items.length === 0;
   return (
     <main className="min-h-[100svh]  text-white">
       <section className="mx-auto max-w-[480px] px-5 pb-24">
         {/* 헤더 */}
         <header className="pt-6 pb-4 flex items-center justify-between">
           <h1 className="text-[20px] font-semibold">기록</h1>
-          <Link href="/stats" className="text-[13px] text-white/70 underline">
+          {/* <Link href="/stats" className="text-[13px] text-white/70 underline">
             통계
-          </Link>
+          </Link> */}
         </header>
         {/* 보기 전환 */}
         <ViewToggle value={view} onChange={setView} />
@@ -53,31 +54,33 @@ export default function MyDiaryClient() {
           <>
             {/* 콘텐츠 */}
             <div className="mt-5">
-              {view === "list" && (
+              {diaryMonthLoading ? (
+                <DiaryCollectionPageSkeleton view={view} />
+              ) : (
                 <>
-                  {(diaryMonthData?.data?.items ?? [])?.length === 0 && (
-                    <EmptyState />
+                  {view === 'list' && (
+                    <>
+                      {isEmpty && <EmptyState />}
+                      {items.map((diary) => (
+                        <section key={diary.diary_id} className="mb-6">
+                          <DateHeader date={diary.entry_date} />
+                          <ul className="mt-2">
+                            <JournalCard diary={diary} />
+                          </ul>
+                        </section>
+                      ))}
+                    </>
                   )}
-                  {(diaryMonthData?.data?.items ?? [])?.map(
-                    (diary: TDiaryItem) => (
-                      <section key={diary.diary_id} className="mb-6">
-                        <DateHeader date={diary.entry_date} />
-                        <ul className="mt-2 space-y-2">
-                          <JournalCard key={diary.diary_id} diary={diary} />
-                        </ul>
-                      </section>
-                    )
+
+                  {view === 'calendar' && (
+                    <CalendarView
+                      month={selectedMonth}
+                      diaryList={items}
+                      selectedDate={selectedDate}
+                      onSelectDate={setSelectedDate}
+                    />
                   )}
                 </>
-              )}
-
-              {view === "calendar" && (
-                <CalendarView
-                  month={selectedMonth}
-                  diaryList={diaryMonthData?.data?.items ?? []}
-                  selectedDate={selectedDate}
-                  onSelectDate={setSelectedDate}
-                />
               )}
             </div>
           </>

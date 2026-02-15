@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import ProgressBar from "../shared/components/splash/progressBar";
-import SplashStar from "../shared/components/splash/splashStar";
+import ProgressBar from '../shared/components/splash/progressBar';
+import SplashStar from '../shared/components/splash/splashStar';
 
 export default function Splash() {
   return (
     <main
       className={[
-        "flex flex-col gap-3 bg-[radial-gradient(circle,_#0B183D_0%,_#070D1F_100%)] h-screen items-center justify-center",
-      ].join(" ")}
+        'flex flex-col gap-3 bg-[radial-gradient(circle,_#0B183D_0%,_#070D1F_100%)] h-screen items-center justify-center',
+      ].join(' ')}
       aria-label="루미 스플래시"
     >
       {/* 배경 별빛 */}
@@ -18,7 +18,7 @@ export default function Splash() {
         <img
           src="/images/icon/lumi/lumi_main.svg"
           alt="Lumi"
-          className="relative w-[92px] h-[138px] object-contain"
+          className="relative w-[92px] h-[138px] object-contain animate-float"
         />
         {/* 앱 이름 */}
         <h1 className="font-surround   text-white text-[37px] leading-[1.3] font-bold tracking-[-0.01em]">
@@ -36,7 +36,7 @@ export default function Splash() {
 
       <footer
         className="absolute left-1/2 -translate-x-1/2 text-center text-white/45 text-[11px]"
-        style={{ bottom: "max(12px, env(safe-area-inset-bottom))" }}
+        style={{ bottom: 'max(12px, env(safe-area-inset-bottom))' }}
       >
         v0.1.0 · © pat-pat
       </footer>

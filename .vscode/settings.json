@@ -1,0 +1,85 @@
+{
+  // 1. 커밋 메시지 본문(Body) 입력 단계 활성화
+  "conventionalCommits.promptBody": true,
+  // 2. 본문 길이 제한 해제 (상세 내용 작성을 위해)
+  "conventionalCommits.bodyMaxLength": 0,
+  // 3. 자주 사용하는 Scope 한글 설명/코드 등록
+  "conventionalCommits.scopes": ["env", "ui", "api", "diary"],
+  // 4. Git 커밋 시 VS Code 내부의 Input Box 사용 여부
+  "git.useEditorAsCommitInput": false,
+
+  // 기본 포맷터(코드 스타일 정리 도구)를 Prettier로 설정
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  // 파일 저장 시 자동으로 코드 스타일 정리
+  "editor.formatOnSave": true,
+  // 우측 미니맵(코드 요약 지도) 비활성화로 작업 공간 확보
+  "editor.minimap.enabled": false,
+  // 파일 클릭 시 '미리보기' 모드가 아닌 '새 탭'으로 즉시 열기
+  "workbench.editor.enablePreview": false,
+
+  // 특정 언어별로 Prettier 포맷터 명시적 지정
+  "[typescriptreact]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[typescript]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+  "[css]": { "editor.defaultFormatter": "esbenp.prettier-vscode" },
+
+  // 파일 위치를 옮길 때 관련된 import 경로를 자동으로 업데이트`
+  "javascript.updateImportsOnFileMove.enabled": "always",
+  "typescript.updateImportsOnFileMove.enabled": "always",
+
+  // Next.js App Router 등 특정 경로(app/)의 컴포넌트 자동 임포트 추천 방지
+  "typescript.preferences.autoImportFileExcludePatterns": ["**/src/app/**"],
+  "javascript.preferences.autoImportFileExcludePatterns": ["**/src/app/**"],
+  // 상대 경로(../../) 대신 절대 경로/Alias(@/) 우선 사용
+  "typescript.preferences.importModuleSpecifier": "non-relative",
+  "javascript.preferences.importModuleSpecifier": "non-relative",
+
+  "typescript.preferences.importModuleSpecifierEnding": "minimal",
+  "javascript.preferences.importModuleSpecifierEnding": "minimal",
+
+  // 저장 시 실행될 자동 액션
+  "editor.codeActionsOnSave": {
+    "source.organizeImports": "explicit", // 사용하지 않는 import 제거 및 정렬
+    "source.fixAll.eslint": "explicit" // ESLint 에러 자동 수정
+  },
+
+  // VS Code AI 채팅(Copilot 등)이 참고할 프로젝트 규칙 경로
+  "chat.instructionsFilesLocations": {
+    ".github/instructions": true
+  },
+
+  // ESLint의 새로운 설정 방식(Flat Config) 사용 허용
+  "eslint.experimental.useFlatConfig": true,
+  // 파일 삭제 시 확인 팝업 생략
+  "explorer.confirmDelete": false,
+  // Git 동기화 시 확인 창 생략
+  "git.confirmSync": false,
+  // 원격 저장소의 변경 사항을 주기적으로 자동 확인
+  "git.autofetch": true,
+
+  // 괄호 한 쌍에 색상을 입혀 가독성 향상 (필수!)
+  "editor.bracketPairColorization.enabled": true,
+  "editor.guides.bracketPairs": "active",
+
+  // 파일 끝에 빈 줄 자동 추가 (Git Diff 관리 깔끔)
+  "files.insertFinalNewline": true,
+
+  // 불필요한 공백 자동 제거
+  "files.trimTrailingWhitespace": true,
+
+  // 코드 붙여넣기 시 자동으로 import 추가
+  "javascript.suggest.autoImports": true,
+  "typescript.suggest.autoImports": true,
+
+  // Prettier와 ESLint 충돌 방지를 위한 설정 (Prettier가 포맷팅 전담)
+  "editor.formatOnSaveMode": "file",
+
+  "tailwindCSS.includeLanguages": {
+    "typescript": "javascript",
+    "typescriptreact": "javascript"
+  },
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+    // "source.fixAll.prettier": "explicit" // 만아가 tailwind-prettier 플러그인을 쓰신다면 유용합니다.
+  }
+}

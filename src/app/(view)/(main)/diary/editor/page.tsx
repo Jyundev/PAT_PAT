@@ -3,11 +3,8 @@ import { diaryKeys } from '@/features/diary/queries/diaries';
 import { tagsKeys } from '@/features/diary/queries/tags';
 import { getDiaryDetailServer } from '@/features/diary/services/diary.server';
 import { getTagsServer } from '@/features/diary/services/tags.server';
-import {
-  dehydrate,
-  HydrationBoundary,
-  QueryClient,
-} from '@tanstack/react-query';
+import { getQueryClient } from '@/lib/providers/query-client';
+import { dehydrate, HydrationBoundary } from '@tanstack/react-query';
 
 export default async function DiaryWritePage({
   searchParams,
@@ -15,24 +12,28 @@ export default async function DiaryWritePage({
   searchParams: Promise<{ diaryId?: string }>;
 }) {
   const { diaryId } = await searchParams;
-  const qc = new QueryClient();
+  const queryClient = getQueryClient();
 
-  await qc.prefetchQuery({
-    queryKey: tagsKeys.list(),
-    queryFn: getTagsServer,
-    staleTime: 1000 * 60 * 30,
-  });
+  const prefetchPromises = [
+    queryClient.prefetchQuery({
+      queryKey: tagsKeys.list(),
+      queryFn: getTagsServer,
+      staleTime: 1000 * 60 * 30,
+    }),
+  ];
 
   if (diaryId) {
-    await qc.prefetchQuery({
-      queryKey: diaryKeys.detail(diaryId),
-      queryFn: () => getDiaryDetailServer(diaryId),
-      staleTime: 1000 * 60 * 30,
-    });
+    prefetchPromises.push(
+      queryClient.prefetchQuery({
+        queryKey: diaryKeys.detail(diaryId),
+        queryFn: () => getDiaryDetailServer(diaryId),
+        staleTime: 1000 * 60 * 30,
+      })
+    );
   }
 
   return (
-    <HydrationBoundary state={dehydrate(qc)}>
+    <HydrationBoundary state={dehydrate(queryClient)}>
       <DiaryWrite diaryId={diaryId} />
     </HydrationBoundary>
   );
