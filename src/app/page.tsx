@@ -18,7 +18,7 @@ export default function Splash() {
         <img
           src="/images/icon/lumi/lumi_main.svg"
           alt="Lumi"
-          className="relative w-[92px] h-[138px] object-contain"
+          className="relative w-[92px] h-[138px] object-contain animate-float"
         />
         {/* 앱 이름 */}
         <h1 className="font-surround   text-white text-[37px] leading-[1.3] font-bold tracking-[-0.01em]">
