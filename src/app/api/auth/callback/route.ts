@@ -1,90 +1,95 @@
-import { createServerSupabaseClient } from "@/utils/supabase/server";
-import { NextRequest, NextResponse } from "next/server";
+import { Errors, mapSupabaseError } from '@/lib';
+import { createServerSupabaseClient } from '@/utils/supabase/server';
+import { NextRequest, NextResponse } from 'next/server';
 
-const AFTER_LOGIN = "/home";
-const SIGNIN = "/auth/signin";
-const SAFE_PATHS = new Set([AFTER_LOGIN, "/"]); // 허용 리다이렉트 경로
-
+const AFTER_LOGIN = '/home';
+const SIGNIN = '/start';
+const SAFE_PATHS = new Set([AFTER_LOGIN, '/']); // 허용 리다이렉트 경로
 export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const origin = url.origin;
-  const code = url.searchParams.get("code");
-  const state = url.searchParams.get("state");
 
-  const oauthErr =
-    url.searchParams.get("error") ?? url.searchParams.get("error_description");
-  const next = url.searchParams.get("next"); // (선택) 돌아갈 경로
+  try {
+    const code = url.searchParams.get('code');
+    const oauthErr =
+      url.searchParams.get('error') ||
+      url.searchParams.get('error_description');
 
-  // 디버깅 로그
-  console.log("[auth/callback] Request URL:", request.url);
-  console.log("[auth/callback] Origin:", origin);
-  console.log("[auth/callback] Next param:", next);
-  console.log("[auth/callback] Code exists:", !!code);
-
-  // 1) OAuth 단계 에러
-  if (oauthErr) {
-    return NextResponse.redirect(new URL(`${SIGNIN}?error=oauth`, origin), {
-      status: 303,
-    });
-  }
-  // 2) code 없음
-  if (!code) {
-    return NextResponse.redirect(
-      new URL(`${SIGNIN}?error=missing_code`, origin),
-      { status: 303 }
-    );
-  }
-
-  // 3) 서버 클라이언트
-  const supabase = await createServerSupabaseClient();
-
-  // 4) 세션 교환 (user/session 반환됨)
-  const { data, error } = await supabase.auth.exchangeCodeForSession(code);
-  if (error) {
-    console.error("OAuth exchange error:", error.message);
-    // 교환 실패 → 로그인 페이지로
-    return NextResponse.redirect(
-      new URL(`${SIGNIN}?error=exchange_failed`, origin),
-      { status: 303 }
-    );
-  }
-
-  // 5) 사용자 정보로 users upsert
-  const user = data.user;
-  if (user) {
-    const provider = (user.app_metadata?.provider as string) ?? "kakao";
-    const nickname =
-      (user.user_metadata?.name as string) ??
-      (user.user_metadata?.nickname as string) ??
-      null;
-    const avatar =
-      (user.user_metadata?.avatar_url as string) ??
-      (user.user_metadata?.picture as string) ??
-      null;
-
-    const { error: upsertErr } = await supabase.from("users").upsert(
-      {
-        auth_user_id: user.id,
-        email: user.email ?? null,
-        signup_method: provider, // 'kakao' 등
-        // profile_image: avatar, // 테이블에 있으면 추가
-        nickname, // 테이블에 있으면 추가
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: "auth_user_id" }
-    );
-
-    if (upsertErr) {
-      console.error("[auth/callback] users upsert failed:", upsertErr.message);
+    // 1) OAuth 단계 에러 (외부 서비스 문제)
+    if (oauthErr) {
+      throw Errors.unauthorized(`OAuth provider error: ${oauthErr}`);
     }
+    // 2) Code 누락
+    if (!code) {
+      throw Errors.invalid('Missing OAuth code');
+    }
+    const supabase = await createServerSupabaseClient();
+    // 3) 세션 교환
+    const { data, error: exchangeError } =
+      await supabase.auth.exchangeCodeForSession(code);
+    if (exchangeError) {
+      // Supabase 에러를 우리 표준 에러로 변환
+      throw mapSupabaseError(exchangeError);
+    }
+    // 4) 사용자 정보 저장 (DB 작업)
+    const user = data.user;
+    const provider = user.app_metadata?.provider as string;
+    const nickname = user.user_metadata?.nickname || user.user_metadata?.name;
+    if (user) {
+      // 먼저 유저가 있는지 확인
+      const { data: existingUser, error: selectErr } = await supabase
+        .from('users')
+        .select('user_id')
+        .eq('auth_user_id', user.id)
+        .maybeSingle(); // .single() 대신 .maybeSingle() 사용 추천
+
+      // selectErr가 있고, 데이터가 정말 없는 경우가 아니라면(진짜 에러라면) 예외 처리
+      if (selectErr) throw mapSupabaseError(selectErr);
+
+      if (!existingUser) {
+        // [회원가입 로직] DB에 유저가 없는 경우
+        const { error: insertErr } = await supabase.from('users').insert({
+          auth_user_id: user.id,
+          email: user.email,
+          signup_method_: provider,
+          nickname,
+          // 가입 시에만 넣을 데이터 추가 (예: 포인트, 마케팅 수신동의 등)
+        });
+        if (insertErr) throw mapSupabaseError(insertErr);
+
+        console.log('신규 회원가입 발생!');
+      } else {
+        // [로그인 로직] 이미 유저가 있는 경우
+        const { error: updateErr } = await supabase
+          .from('users')
+          .update({
+            updated_at: new Date().toISOString(),
+          })
+          .eq('auth_user_id', user.id);
+
+        if (updateErr) throw mapSupabaseError(updateErr);
+
+        console.log('기존 회원 로그인!');
+      }
+    }
+    const nextParam = url.searchParams.get('next');
+    const targetPath =
+      nextParam && SAFE_PATHS.has(nextParam) ? nextParam : AFTER_LOGIN;
+    // 성공 리다이렉트
+    return NextResponse.redirect(new URL(targetPath, origin));
+  } catch (err: any) {
+    // 5) 모든 에러가 모이는 곳 (에러 처리 통합)
+    console.error('[auth/callback] Error caught:', err);
+
+    // AppError인지 확인하고, 아니면 internal error로 간주
+    const appError = err.code
+      ? err
+      : Errors.internal(err.message || 'Unknown error');
+
+    // 클라이언트에게 에러 정보를 넘김
+    return NextResponse.redirect(
+      new URL(`${SIGNIN}?error=${appError.code}`, origin),
+      { status: 303 }
+    );
   }
-
-  const targetPath = next && SAFE_PATHS.has(next) ? next : AFTER_LOGIN;
-
-  // 요청이 들어온 도메인(localhost or vercel.app)으로 리다이렉트
-  // 다른 도메인으로 잘못 이동하는 것을 방지
-  const redirectUrl = new URL(targetPath, origin);
-  console.log("[auth/callback] Final redirect URL:", redirectUrl.href);
-
-  return NextResponse.redirect(redirectUrl, { status: 303 });
 }

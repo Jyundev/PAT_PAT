@@ -10,19 +10,17 @@ export type AppErrorCode =
   | 'INTERNAL_ERROR';
 
 export class AppError extends Error {
-  code: AppErrorCode;
-  status: number;
-  details?: unknown;
-
   constructor(
-    code: AppErrorCode,
+    public code: AppErrorCode,
     message: string,
-    status: number,
-    details?: unknown
+    public status: number,
+    public details?: unknown
   ) {
     super(message);
-    this.code = code;
-    this.status = status;
-    this.details = details;
+    this.name = 'AppError';
+    // 에러 발생 지점을 정확히 잡기 위해 stack trace 조정 (V8 엔진 환경)
+    if (Error.captureStackTrace) {
+      Error.captureStackTrace(this, AppError);
+    }
   }
 }
