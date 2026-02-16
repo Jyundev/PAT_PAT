@@ -19,7 +19,7 @@ export async function loadTemplates(): Promise<ZodiacTemplate[]> {
   const res = await fetch("/api/star", { cache: "no-store" });
   if (!res.ok) throw new Error("failed to load starAPI");
   const data = await res.json();
-  
+
   // API 응답을 ZodiacTemplate 형식으로 변환
   return data.map((item: any) => ({
     zodiac_code: item.star_code || item.zodiac_code,
@@ -247,6 +247,28 @@ export function displayDate(date: Date | string): string {
  */
 export function getZodiacNameKo(sign: ZodiacSign): string {
   return ZODIAC_DEFINITIONS[sign].name_ko;
+}
+
+/**
+ * 별자리 배경 이미지 경로 반환
+ * 월별로 해당하는 별자리 배경 이미지를 반환합니다.
+ */
+export function getZodiacBackgroundImage(sign: ZodiacSign): string {
+  const imageMap: Record<ZodiacSign, string> = {
+    aquarius: "/images/bg/zodiac/1_aquarius.png",
+    pisces: "/images/bg/zodiac/2_pisces.png",
+    aries: "/images/bg/zodiac/3_aries.png",
+    taurus: "/images/bg/zodiac/4_taurus.png",
+    gemini: "/images/bg/zodiac/5_gemini.png",
+    cancer: "/images/bg/zodiac/6_cancer.png",
+    leo: "/images/bg/zodiac/7_leo.png",
+    virgo: "/images/bg/zodiac/8_virgo.png",
+    libra: "/images/bg/zodiac/9_libra.png",
+    scorpio: "/images/bg/zodiac/10_scorpio.png",
+    sagittarius: "/images/bg/zodiac/11_sagittarius.png",
+    capricorn: "/images/bg/zodiac/12_capricorn.png",
+  };
+  return imageMap[sign];
 }
 
 export function expandToDays(

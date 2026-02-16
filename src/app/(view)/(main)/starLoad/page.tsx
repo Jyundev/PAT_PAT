@@ -1,9 +1,8 @@
 'use client';
 
-import ConstellationSvg from '@/shared/components/ConstellationSvg';
-import EntryModal from '@/shared/components/EntryModal';
 import {
   displayDate,
+  getZodiacBackgroundImage,
   getZodiacNameKo,
   getZodiacSeasonRange,
   getZodiacSign,
@@ -11,6 +10,8 @@ import {
   toDateString,
   type Pt,
 } from '@/lib/zodiac';
+import ConstellationSvg from '@/shared/components/ConstellationSvg';
+import EntryModal from '@/shared/components/EntryModal';
 import { Entry, getEntryByDate, loadEntriesByRange } from '@/utils/entries';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useMemo, useState } from 'react';
@@ -24,14 +25,16 @@ export default function Page() {
   const sign = useMemo(() => getZodiacSign(today), []);
   const seasonRange = useMemo(() => getZodiacSeasonRange(today, sign), [sign]);
   const zodiacName = getZodiacNameKo(sign);
+  const zodiacBgImage = useMemo(() => getZodiacBackgroundImage(sign), [sign]);
 
-  // 디버깅
+  // 개발 환경에서만 디버깅 로그
   useEffect(() => {
-    console.log('[starLoad] Sign:', sign);
-    console.log('[starLoad] Season range:', seasonRange);
-    console.log('[starLoad] Days count:', seasonRange.daysCount);
-    console.log('[starLoad] Dates:', seasonRange.dates.slice(0, 5), '...');
-  }, [sign, seasonRange]);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[starLoad] Sign:', sign);
+      console.log('[starLoad] Background image:', zodiacBgImage);
+      console.log('[starLoad] Season range:', seasonRange.daysCount, 'days');
+    }
+  }, [sign, seasonRange, zodiacBgImage]);
 
   // 앵커 포인트 (별자리 템플릿에서 가져오기)
   const [anchorPoints, setAnchorPoints] = useState<Pt[]>([
@@ -152,11 +155,12 @@ export default function Page() {
     <main className="min-h-[100svh] text-white">
       {/* 배경 */}
       <div className="fixed inset-0 -z-10 bg-space">
-        <div className="nebula nebula-a" />
-        <div className="nebula nebula-b" />
-        <div className="nebula nebula-c" />
-        <div className="starfield" />
-        <div className="vignette" />
+        {/* 오버레이 효과들 */}
+        <div className="nebula nebula-a opacity-30" />
+        <div className="nebula nebula-b opacity-30" />
+        <div className="nebula nebula-c opacity-30" />
+        <div className="starfield opacity-20" />
+        <div className="vignette opacity-30" />
       </div>
 
       <section className="mx-auto w-full max-w-[480px] px-5 pt-5 pb-28">
@@ -202,33 +206,60 @@ export default function Page() {
         {/* Hero constellation card */}
         <div className="mt-4 hero-card">
           <div className="hero-halo" />
-          <div className="hero-inner p-4 min-h-[300px]">
-            {loading ? (
-              <div className="text-white/60 text-sm text-center py-8">
-                별자리 로딩 중…
-              </div>
-            ) : seasonRange.daysCount === 0 ? (
-              <div className="text-white/60 text-sm text-center py-8">
-                별자리 데이터를 불러올 수 없습니다.
-                <br />
-                <span className="text-xs">
-                  daysCount: {seasonRange.daysCount}
-                </span>
-              </div>
-            ) : anchorPoints.length === 0 ? (
-              <div className="text-white/60 text-sm text-center py-8">
-                앵커 포인트를 불러올 수 없습니다.
-              </div>
-            ) : (
-              <ConstellationSvg
-                anchorPoints={anchorPoints}
-                daysCount={seasonRange.daysCount}
-                entries={entries}
-                dates={seasonRange.dates}
-                todayDate={todayStr}
-                onStarClick={handleStarClick}
-              />
-            )}
+          <div className="hero-inner p-4 min-h-[300px] relative">
+            {/* 기본 배경 이미지 */}
+            <div
+              className="absolute inset-0 opacity-30 pointer-events-none"
+              style={{
+                backgroundImage: 'url(/images/bg/zodiac_bg/starLoad_bg.png)',
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+              aria-hidden="true"
+            />
+
+            {/* 별자리 배경 이미지 - SVG와 같은 영역에 배치 */}
+            <div
+              className="absolute inset-0 opacity-40 pointer-events-none"
+              style={{
+                backgroundImage: `url(${zodiacBgImage})`,
+                backgroundSize: 'contain',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }}
+              aria-hidden="true"
+            />
+
+            {/* SVG 레이어 */}
+            <div className="relative z-10">
+              {loading ? (
+                <div className="text-white/60 text-sm text-center py-8">
+                  별자리 로딩 중…
+                </div>
+              ) : seasonRange.daysCount === 0 ? (
+                <div className="text-white/60 text-sm text-center py-8">
+                  별자리 데이터를 불러올 수 없습니다.
+                  <br />
+                  <span className="text-xs">
+                    daysCount: {seasonRange.daysCount}
+                  </span>
+                </div>
+              ) : anchorPoints.length === 0 ? (
+                <div className="text-white/60 text-sm text-center py-8">
+                  앵커 포인트를 불러올 수 없습니다.
+                </div>
+              ) : (
+                <ConstellationSvg
+                  anchorPoints={anchorPoints}
+                  daysCount={seasonRange.daysCount}
+                  entries={entries}
+                  dates={seasonRange.dates}
+                  todayDate={todayStr}
+                  onStarClick={handleStarClick}
+                />
+              )}
+            </div>
           </div>
         </div>
 
