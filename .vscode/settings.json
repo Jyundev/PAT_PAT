@@ -4,7 +4,7 @@
   // 2. 본문 길이 제한 해제 (상세 내용 작성을 위해)
   "conventionalCommits.bodyMaxLength": 0,
   // 3. 자주 사용하는 Scope 한글 설명/코드 등록
-  "conventionalCommits.scopes": ["env", "ui", "api", "diary"],
+  "conventionalCommits.scopes": ["env", "ui", "api", "diary", "comment"],
   // 4. Git 커밋 시 VS Code 내부의 Input Box 사용 여부
   "git.useEditorAsCommitInput": false,
 
