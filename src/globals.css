@@ -1,185 +1,153 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
+/* ---------------- Fonts ---------------- */
 @font-face {
-  font-family: "NanumSquare";
-  src: url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareR.woff2")
-      format("woff2"),
-    url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareR.woff")
-      format("woff");
+  font-family: 'NanumSquare';
+  src: url('https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareR.woff2')
+      format('woff2'),
+    url('https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareR.woff')
+      format('woff');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NanumSquare';
+  src: url('https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareB.woff2')
+      format('woff2'),
+    url('https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareB.woff')
+      format('woff');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'SchoolSafetyRoundedSmile';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-B.woff2')
+    format('woff2');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Cafe24Surround';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24Ssurround.woff')
+    format('woff');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
 }
 
+/* ⚠️ Pretendard: Medium인데 weight 200으로 선언돼 있어서 매핑이 꼬일 수 있음 */
 @font-face {
-  font-family: "NanumSquare";
-  src: url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareB.woff2")
-      format("woff2"),
-    url("https://cdn.jsdelivr.net/gh/moonspam/NanumSquare@latest/NanumSquareB.woff")
-      format("woff");
-  font-weight: 700;
+  font-family: 'Pretendard';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2')
+    format('woff2');
+  font-weight: 500; /* ✅ Medium은 500 */
   font-style: normal;
   font-display: swap;
 }
 
-@font-face {
-  font-family: "SchoolSafetyRoundedSmile";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/2408-5@1.0/HakgyoansimDunggeunmisoTTF-B.woff2")
-    format("woff2");
-  font-weight: 700;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Cafe24Surround";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2105_2@1.0/Cafe24Ssurround.woff")
-    format("woff");
-  font-weight: normal;
-  font-display: swap;
-}
-
-@font-face {
-  font-family: "Pretendard";
-  src: url("https://cdn.jsdelivr.net/gh/projectnoonnu/pretendard@1.0/Pretendard-Medium.woff2")
-    format("woff2");
-  font-weight: 200;
-  font-display: swap;
-}
-
-/* 색상 및 폰트 변수 */
+/* ---------------- Theme Tokens (global) ---------------- */
 :root {
-  --color-bg: #ffffff;
-  --color-text: #1a1a1a; /* 완전 검정 대신 약간 부드러운 진한 회색 */
-  --color-accent: #0071e3; /* Apple 블루 */
-  --color-accent-light: #e6f0ff;
+  /* Fonts */
+  --font-sans: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, Oxygen, Ubuntu, Cantarell, 'Helvetica Neue', Arial, sans-serif;
+  --font-nanum-square: 'NanumSquare', sans-serif;
+  --font-dunggeunmis: 'SchoolSafetyRoundedSmile', cursive, sans-serif;
+  --font-surround: 'Cafe24Surround', cursive, sans-serif;
 
-  --font-sans: "Pretendard", -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", Arial, sans-serif;
-  --font-nanum-square: "NanumSquare", sans-serif;
-  --font-dunggeunmis: "SchoolSafetyRoundedSmile", cursive, sans-serif;
-  --font-surround: "Cafe24Surround", cursive, sans-serif;
-  --font-pretendard: "Pretendard", sans-serif;
+  /* Layout */
   --min-app-width: 412px;
+  --radius-card: 16px;
+  --radius-control: 16px;
+
+  /* Background */
+  --bg-0: #050b1c;
+  --bg-1: #07102a;
+
+  /* Text */
+  --txt-0: rgba(255, 255, 255, 0.92);
+  --txt-1: rgba(255, 255, 255, 0.85);
+  --txt-2: rgba(255, 255, 255, 0.7);
+  --txt-3: rgba(255, 255, 255, 0.55);
+  --txt-4: rgba(255, 255, 255, 0.4);
+
+  /* Glass */
+  --glass-1: rgba(255, 255, 255, 0.06);
+  --glass-2: rgba(255, 255, 255, 0.05);
+  --glass-3: rgba(255, 255, 255, 0.04);
+
+  /* Borders */
+  --bd-1: rgba(255, 255, 255, 0.1);
+  --bd-2: rgba(255, 255, 255, 0.12);
+  --bd-3: rgba(255, 255, 255, 0.2);
+  --bd-strong: rgba(255, 255, 255, 0.4);
+
+  /* Focus (single source of truth) */
+  --accent: 56 189 248; /* sky-400 */
+  --focus-bd: rgba(var(--accent), 0.7);
+  --focus-ring: rgba(var(--accent), 0.25);
+
+  /* CTA */
+  --cta-from: #18326f;
+  --cta-to: #0b1d4a;
+
+  /* Error */
+  --danger: 251 113 133; /* rose-400 */
+  --danger-bd: rgba(var(--danger), 0.8);
+  --danger-ring: rgba(var(--danger), 0.2);
+
+  /* Shadow */
+  --shadow-glass: 0 10px 30px rgba(6, 19, 42, 0.45);
 }
 
+/* ---------------- Font Utility (minimal) ---------------- */
 .font-surround {
   font-family: var(--font-surround);
 }
-
 .font-dunggeunmis {
   font-family: var(--font-dunggeunmis);
 }
-
-.font-pretendard {
-  font-family: var(--font-pretendard);
+.font-nanum {
+  font-family: var(--font-nanum-square);
 }
 
+/* ---------------- Base ---------------- */
+html,
 body {
+  height: 100%;
+}
+body {
+  font-family: var(--font-sans);
   background: radial-gradient(circle at center, #0b183d 0%, #070d1f 100%);
-  color: var(--color-text);
-  font-family: var(--font-pretendard);
+  color: var(--txt-0);
   font-weight: 400;
   font-size: 18px;
   line-height: 1.6;
   margin: 0;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+
   overflow-x: auto;
   min-width: var(--min-app-width);
 }
 
-.container {
-  width: 100%;
-  max-width: 480px;
-  max-height: 912px;
-  margin-left: auto;
-  margin-right: auto;
-  padding-left: 1rem;
-  padding-right: 1rem;
-  overflow: auto;
+/* Scroll hide helper (global로 남겨도 OK) */
+.scroll-hide::-webkit-scrollbar {
+  display: none;
+}
+.scroll-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
-.text-accent {
-  color: var(--color-accent);
-}
-
-.fade-in-down {
-  opacity: 0;
-  animation: fadeInDown 0.8s ease-out forwards;
-}
-
-@keyframes fadeInDown {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  100% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes fall {
-  0% {
-    transform: translateY(-10vh) rotate(0deg);
-    opacity: 0;
-  }
-  20% {
-    opacity: 1;
-  }
-  100% {
-    transform: translateY(110vh) rotate(360deg);
-    opacity: 0;
-  }
-}
-@keyframes bgColorCycle {
-  0% {
-    background-color: #ff5757;
-  } /* 연분홍 */
-  10% {
-    background-color: #ff8f57;
-  } /* 연오렌지 */
-  28% {
-    background-color: #ffdb57;
-  } /* 금색 */
-  30% {
-    background-color: #caff57;
-  } /* 연초록 */
-  40% {
-    background-color: #57ff97;
-  } /* 연파랑 */
-  505% {
-    background-color: #57ffe9;
-  } /* 중간보라 */
-  60% {
-    background-color: #57b3ff;
-  } /* 진분홍 */
-  70% {
-    background-color: #5765ff;
-  } /* 청록 */
-  80% {
-    background-color: #9557ff;
-  } /* 연분홍 (처음으로 돌아감) */
-  90% {
-    background-color: #ff57a8;
-  } /* 연분홍 (처음으로 돌아감) */
-  100% {
-    background-color: #ff575a;
-  } /* 연분홍 (처음으로 돌아감) */
-}
-
-.cycle-bg {
-  animation: bgColorCycle 8s linear infinite;
-}
-
-@keyframes blink {
-  0%,
-  100% {
-    text-shadow: 0 0 4px #db2777, 0 0 10px #db2777, 0 0 20px #db2777,
-      0 0 30px #db2777;
-  }
-  50% {
-    text-shadow: none;
+/* Accessibility: reduced motion (중복 제거) */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
   }
 }
 
@@ -191,27 +159,6 @@ body {
     transform: translateY(-6px);
   }
   100% {
-    transform: translateY(0);
-  }
-}
-@keyframes sweep {
-  0% {
-    transform: translateX(-120%) rotate(12deg);
-  }
-  60% {
-    transform: translateX(220%) rotate(12deg);
-  }
-  100% {
-    transform: translateX(220%) rotate(12deg);
-  }
-}
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(4px);
-  }
-  to {
-    opacity: 1;
     transform: translateY(0);
   }
 }
@@ -297,111 +244,6 @@ body {
     transform: scale(0.98);
   }
 }
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.25;
-  }
-  50% {
-    opacity: 0.18;
-  }
-  85% {
-    opacity: 0.25;
-  }
-  100% {
-    transform: translateX(100%);
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-@keyframes breath {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 0.7;
-  }
-  50% {
-    transform: scale(1.12);
-    opacity: 1;
-  }
-}
-@keyframes lift {
-  from {
-    transform: translateY(0);
-    opacity: 0.7;
-  }
-  to {
-    transform: translateY(-22%);
-    opacity: 0;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-@keyframes float {
-  0% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-  100% {
-    transform: translateY(0);
-  }
-}
-.animate-float {
-  animation: float 4s ease-in-out infinite;
-}
-
-@keyframes loader {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(300%);
-  }
-}
-.animate-loader {
-  animation: loader 1.6s ease-in-out infinite;
-}
-
-/* 등장→퇴장 전환 */
-@keyframes splashOut {
-  to {
-    opacity: 0;
-    transform: scale(0.995);
-  }
-}
-.animate-splash-out {
-  animation: splashOut 420ms ease forwards;
-}
-
-/* 별빛(미세 펄스 + 살짝 스케일) */
-@keyframes starPulse {
-  0%,
-  100% {
-    opacity: 0;
-    transform: scale(0.8);
-  }
-  50% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-}
 .star {
   position: absolute;
   width: 4px;
@@ -410,29 +252,6 @@ body {
   background: rgba(255, 255, 255, 0.85);
   filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.35));
   animation: starPulse 2.8s ease-in-out infinite;
-}
-.star-d2 {
-  width: 3px;
-  height: 3px;
-  animation-duration: 3.2s;
-  animation-delay: 0.5s;
-  opacity: 0.8;
-}
-.star-d3 {
-  width: 5px;
-  height: 5px;
-  animation-duration: 3.6s;
-  animation-delay: 0.9s;
-  opacity: 0.7;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .animate-loader,
-  .animate-float,
-  .star,
-  .animate-splash-out {
-    animation: none !important;
-  }
 }
 
 /* 공통 */
@@ -462,315 +281,6 @@ body {
   }
 }
 
-/* ----- 미니 프리뷰 ----- */
-/* wind */
-.wind-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.75);
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.25));
-  animation: wind 1.2s ease-in-out infinite;
-}
-.wind-d2 {
-  width: 3px;
-  height: 3px;
-  animation-duration: 1.4s;
-  animation-delay: 0.2s;
-  opacity: 0.9;
-}
-.wind-d3 {
-  width: 5px;
-  height: 5px;
-  animation-duration: 1.6s;
-  animation-delay: 0.35s;
-  opacity: 0.8;
-}
-
-@keyframes wind {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.55;
-  }
-  60% {
-    transform: translate(10px, -18px);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(18px, -32px);
-    opacity: 0;
-  }
-}
-
-/* wave */
-.wave-line {
-  position: absolute;
-  left: -60%;
-  top: 55%;
-  width: 120%;
-  height: 18px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    ellipse 100% 180% at 50% 50%,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0) 70%
-  );
-  filter: blur(2px);
-  animation: wave 1.3s ease-in-out infinite;
-}
-.wave-d2 {
-  top: 62%;
-  animation-duration: 1.6s;
-  animation-delay: 0.15s;
-  opacity: 0.85;
-}
-
-@keyframes wave {
-  0% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.35;
-  }
-  50% {
-    opacity: 0.28;
-  }
-  100% {
-    transform: translateX(60%);
-    opacity: 0;
-  }
-}
-
-/* star */
-.star-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.85);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.32);
-  animation: star 1.2s ease-out infinite;
-}
-.star-d2 {
-  width: 3px;
-  height: 3px;
-  animation-duration: 1.5s;
-  animation-delay: 0.2s;
-  opacity: 0.9;
-}
-
-@keyframes star {
-  0% {
-    transform: translateY(0) scale(0.9);
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.7;
-  }
-  60% {
-    transform: translateY(-10px) scale(1);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(-18px) scale(0.98);
-    opacity: 0;
-  }
-}
-
-/* ----- 제출 시 페이지 레벨 베일 ----- */
-#release-veil .release-layer {
-  opacity: 0;
-}
-#release-veil.opacity-100.animate .release-layer {
-  opacity: 1;
-}
-
-/* wind: 위로 올라가는 연무 */
-#release-veil[data-kind="wind"] .release-layer {
-  background: radial-gradient(
-    ellipse 80% 40% at 50% 110%,
-    rgba(79, 140, 255, 0.22),
-    transparent 60%
-  );
-  animation: veilWind 0.9s ease-out forwards;
-}
-@keyframes veilWind {
-  from {
-    transform: translateY(0);
-    opacity: 0.7;
-  }
-  to {
-    transform: translateY(-20%);
-    opacity: 0;
-  }
-}
-
-/* wave: 수평 리플이 아래로 사라짐 */
-#release-veil[data-kind="wave"] .release-layer {
-  background: radial-gradient(
-    ellipse 120% 60% at 50% 80%,
-    rgba(200, 230, 255, 0.16),
-    transparent 60%
-  );
-  -webkit-mask-image: linear-gradient(
-    to bottom,
-    rgba(0, 0, 0, 1),
-    rgba(0, 0, 0, 0)
-  );
-  mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 1), rgba(0, 0, 0, 0));
-  animation: veilWave 0.9s ease-out forwards;
-}
-@keyframes veilWave {
-  from {
-    transform: translateY(0);
-    filter: blur(0);
-  }
-  to {
-    transform: translateY(8%);
-    filter: blur(2px);
-    opacity: 0;
-  }
-}
-
-/* star: 점광이 위로 소수 떠오르며 페이드 */
-#release-veil[data-kind="star"] .release-layer {
-  background: radial-gradient(
-      ellipse 6px 6px at 48% 80%,
-      rgba(255, 255, 255, 0.6),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 4px 4px at 58% 76%,
-      rgba(255, 255, 255, 0.5),
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse 5px 5px at 40% 82%,
-      rgba(255, 255, 255, 0.55),
-      transparent 60%
-    );
-  animation: veilStar 0.9s ease-out forwards;
-}
-@keyframes veilStar {
-  0% {
-    transform: translateY(0);
-    opacity: 0.8;
-  }
-  60% {
-    transform: translateY(-8px);
-    opacity: 0.5;
-  }
-  100% {
-    transform: translateY(-16px);
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-
-/* 공통 페이드/리프트(카드에 살짝 적용할 때 사용하려면 클래스 부여) */
-@keyframes liftFade {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-  }
-  100% {
-    transform: translate(-50%, -62%) scale(0.98);
-    opacity: 0;
-  }
-}
-
-/* 🌬 바람: 입자 드리프트 + 카드 슬쩍 떠오르며 사라짐 */
-.wind-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.8);
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
-  animation: wind 1s ease-in-out forwards;
-}
-.wind-d2 {
-  width: 3px;
-  height: 3px;
-  animation-duration: 1.1s;
-  animation-delay: 0.05s;
-  opacity: 0.9;
-}
-.wind-d3 {
-  width: 5px;
-  height: 5px;
-  animation-duration: 1.15s;
-  animation-delay: 0.1s;
-  opacity: 0.85;
-}
-@keyframes wind {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.55;
-  }
-  60% {
-    transform: translate(10px, -18px);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(18px, -32px);
-    opacity: 0;
-  }
-}
-
-/* 🌊 물결: 수평 리플 마스크 + 카드가 아래로 스며들 듯 페이드 */
-.wave-line {
-  position: absolute;
-  left: -60%;
-  top: 52%;
-  width: 120%;
-  height: 18px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    ellipse 100% 180% at 50% 50%,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0) 70%
-  );
-  filter: blur(2px);
-  animation: wave 1.05s ease-in-out forwards;
-}
-.wave-d2 {
-  top: 60%;
-  animation-delay: 0.12s;
-  opacity: 0.85;
-}
-@keyframes wave {
-  0% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.35;
-  }
-  55% {
-    opacity: 0.28;
-  }
-  100% {
-    transform: translateX(60%);
-    opacity: 0;
-  }
-}
-
-/* ✨ 별: 점광이 위로 소수 떠오르며 카드도 함께 사라짐 */
 .star-dot {
   position: absolute;
   width: 4px;
@@ -806,296 +316,6 @@ body {
   }
   100% {
     transform: translateY(-22px) scale(0.98);
-    opacity: 0;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation: none !important;
-    transition: none !important;
-  }
-}
-/* wind */
-.wind-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.8);
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
-  animation: wind 1s ease-in-out forwards;
-}
-.wind-d2 {
-  width: 3px;
-  height: 3px;
-  animation-duration: 1.1s;
-  animation-delay: 0.05s;
-  opacity: 0.9;
-}
-.wind-d3 {
-  width: 5px;
-  height: 5px;
-  animation-duration: 1.15s;
-  animation-delay: 0.1s;
-  opacity: 0.85;
-}
-@keyframes wind {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.55;
-  }
-  60% {
-    transform: translate(10px, -18px);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(18px, -32px);
-    opacity: 0;
-  }
-}
-/* wave */
-.wave-line {
-  position: absolute;
-  left: -60%;
-  top: 52%;
-  width: 120%;
-  height: 18px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    ellipse 100% 180% at 50% 50%,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0) 70%
-  );
-  filter: blur(2px);
-  animation: wave 1.05s ease-in-out forwards;
-}
-.wave-d2 {
-  top: 60%;
-  animation-delay: 0.12s;
-  opacity: 0.85;
-}
-@keyframes wave {
-  0% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.35;
-  }
-  55% {
-    opacity: 0.28;
-  }
-  100% {
-    transform: translateX(60%);
-    opacity: 0;
-  }
-}
-/* star */
-.star-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 8px rgba(255, 255, 255, 0.32);
-  animation: star 1.05s ease-out forwards;
-}
-.star-d2 {
-  width: 3px;
-  height: 3px;
-  animation-delay: 0.12s;
-  opacity: 0.9;
-}
-.star-d3 {
-  width: 5px;
-  height: 5px;
-  animation-delay: 0.2s;
-  opacity: 0.85;
-}
-@keyframes star {
-  0% {
-    transform: translateY(0) scale(0.9);
-    opacity: 0;
-  }
-  20% {
-    opacity: 0.7;
-  }
-  60% {
-    transform: translateY(-12px) scale(1);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translateY(-22px) scale(0.98);
-    opacity: 0;
-  }
-}
-
-/* globals.css 예시 */
-.ember-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 205, 158, 0.9);
-  box-shadow: 0 0 8px rgba(255, 205, 158, 0.35);
-  animation: emberRise 1s ease-out forwards;
-}
-.ember-d2 {
-  width: 3px;
-  height: 3px;
-  animation-delay: 0.1s;
-  opacity: 0.9;
-}
-
-@keyframes emberGlow {
-  0% {
-    opacity: 0;
-    transform: scale(0.96);
-  }
-  30% {
-    opacity: 0.6;
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.05);
-  }
-}
-@keyframes emberRise {
-  0% {
-    transform: translateY(0) scale(0.95);
-    opacity: 0;
-  }
-  40% {
-    opacity: 0.7;
-  }
-  100% {
-    transform: translateY(-14px) scale(1);
-    opacity: 0;
-  }
-}
-/* 모션 축소 고려 */
-@media (prefers-reduced-motion: reduce) {
-  .ink-dissolve,
-  .wind-dot,
-  .wave-line,
-  .star-dot {
-    animation: none !important;
-  }
-}
-
-/* 잉크 디졸브 */
-.ink-dissolve {
-  /* 시작 시 바로 애니 시작 */
-  -webkit-mask-image: radial-gradient(
-    circle at 0% 50%,
-    rgba(0, 0, 0, 1) 30%,
-    transparent 60%
-  );
-  mask-image: radial-gradient(
-    circle at 0% 50%,
-    rgba(0, 0, 0, 1) 30%,
-    transparent 60%
-  );
-  -webkit-mask-size: 200% 200%;
-  mask-size: 200% 200%;
-  animation: inkDissolve 1s ease forwards;
-}
-@keyframes inkDissolve {
-  0% {
-    -webkit-mask-position: 0% 50%;
-    mask-position: 0% 50%;
-    opacity: 1;
-  }
-  70% {
-    opacity: 0.6;
-  }
-  100% {
-    -webkit-mask-position: 120% 50%;
-    mask-position: 120% 50%;
-    opacity: 0;
-  }
-}
-
-/* 바람 */
-.wind-dot {
-  position: absolute;
-  width: 4px;
-  height: 4px;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.8);
-  filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.3));
-  animation: wind 1s ease-in-out forwards;
-}
-.wind-d2 {
-  width: 3px;
-  height: 3px;
-  animation-duration: 1.1s;
-  animation-delay: 0.05s;
-  opacity: 0.9;
-}
-.wind-d3 {
-  width: 5px;
-  height: 5px;
-  animation-duration: 1.15s;
-  animation-delay: 0.1s;
-  opacity: 0.85;
-}
-@keyframes wind {
-  0% {
-    transform: translate(0, 0);
-    opacity: 0;
-  }
-  10% {
-    opacity: 0.55;
-  }
-  60% {
-    transform: translate(10px, -18px);
-    opacity: 0.6;
-  }
-  100% {
-    transform: translate(18px, -32px);
-    opacity: 0;
-  }
-}
-
-/* 물결 */
-.wave-line {
-  position: absolute;
-  left: -60%;
-  top: 52%;
-  width: 120%;
-  height: 18px;
-  border-radius: 9999px;
-  background: radial-gradient(
-    ellipse 100% 180% at 50% 50%,
-    rgba(255, 255, 255, 0.18),
-    rgba(255, 255, 255, 0) 70%
-  );
-  filter: blur(2px);
-  animation: wave 1.05s ease-in-out forwards;
-}
-.wave-d2 {
-  top: 60%;
-  animation-delay: 0.12s;
-  opacity: 0.85;
-}
-@keyframes wave {
-  0% {
-    transform: translateX(0);
-    opacity: 0;
-  }
-  15% {
-    opacity: 0.35;
-  }
-  55% {
-    opacity: 0.28;
-  }
-  100% {
-    transform: translateX(60%);
     opacity: 0;
   }
 }
@@ -1256,7 +476,7 @@ body {
 }
 
 .skeleton::after {
-  content: "";
+  content: '';
   position: absolute;
   inset: 0;
   transform: translateX(-100%);

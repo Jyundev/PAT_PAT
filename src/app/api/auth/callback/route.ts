@@ -51,7 +51,7 @@ export async function GET(request: NextRequest) {
         const { error: insertErr } = await supabase.from('users').insert({
           auth_user_id: user.id,
           email: user.email,
-          signup_method_: provider,
+          signup_method: provider,
           nickname,
           // 가입 시에만 넣을 데이터 추가 (예: 포인트, 마케팅 수신동의 등)
         });

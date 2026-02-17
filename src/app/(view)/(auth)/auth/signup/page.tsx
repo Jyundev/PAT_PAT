@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import SocialLogin from "@/features/auth/components/socialLogin";
-import LoginButton from "@/shared/components/loginBtn";
-import { useSignUpPage } from "@/features/auth/hooks/useSignUpPage";
+import SocialLogin from '@/features/auth/components/socialLogin';
+import { useSignUpPage } from '@/features/auth/hooks/useSignUpPage';
+import LoginButton from '@/shared/components/loginBtn';
 
 export default function SignUpPage() {
   const { handleEmailSignup, handleGoToSignIn } = useSignUpPage();
@@ -11,11 +11,7 @@ export default function SignUpPage() {
     <main className="relative min-h-[100svh] overflow-y-auto">
       <div
         aria-hidden
-        className="absolute inset-0 -z-20 bg-[radial-gradient(100%_70%_at_50%_100%,#0b1d4a_0%,#091430_48%,#070f24_100%)]"
-      />
-      <div
-        aria-hidden
-        className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_center,transparent_60%,rgba(0,0,0,0.28))]"
+        className="absolute inset-0 -z-10 bg-[radial-gradient(100%_70%_at_50%_100%,#0b1d4a_0%,#091430_48%,#070f24_100%)]"
       />
 
       <section className="relative mx-auto w-full max-w-[480px] min-h-[100svh] px-5 py-4">
@@ -29,11 +25,11 @@ export default function SignUpPage() {
         </header>
 
         <div
-          className="flex flex-col items-center mt-6 rounded-[16px] border border-white/12 
+          className="flex flex-col items-center mt-6 rounded-[16px] border border-white/12
              bg-white/6 backdrop-blur px-5 pt-5 pb-6 text-center shadow-[0_12px_36px_rgba(7,17,40,0.35)]"
         >
           <LoginButton
-            title={"이메일로 시작하기"}
+            title={'이메일로 시작하기'}
             onClickEvent={handleEmailSignup}
             style="bg-[#1E2843] text-[#FBFBFB]"
           />
@@ -42,7 +38,7 @@ export default function SignUpPage() {
           <div className="relative w-full max-w-[360px] my-5">
             <div className="h-px bg-white/10" />
             <span
-              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 
+              className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2
                  px-3 text-white/60 text-[16px] bg-[#0b1d4a]/50 backdrop-blur-sm rounded-full"
             >
               or
@@ -58,7 +54,7 @@ export default function SignUpPage() {
           <div className="mt-5">
             <button
               onClick={handleGoToSignIn}
-              className="text-white/85 text-[13px] underline underline-offset-4 
+              className="text-white/85 text-[13px] underline underline-offset-4
                  hover:text-white transition py-6"
             >
               이미 계정이 있나요? 로그인
