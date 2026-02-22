@@ -3,8 +3,10 @@
 import SocialLogin from '@/features/auth/components/socialLogin';
 import { useSignUpPage } from '@/features/auth/hooks/useSignUpPage';
 import LoginButton from '@/shared/components/loginBtn';
+import { useRouter } from 'next/navigation';
 
 export default function SignUpPage() {
+  const router = useRouter();
   const { handleEmailSignup, handleGoToSignIn } = useSignUpPage();
 
   return (
@@ -51,13 +53,13 @@ export default function SignUpPage() {
           </div>
 
           {/* 로그인 안내 */}
-          <div className="mt-5">
+          <div className="mt-4 text-center">
             <button
-              onClick={handleGoToSignIn}
-              className="text-white/85 text-[13px] underline underline-offset-4
-                 hover:text-white transition py-6"
+              type="button"
+              onClick={() => router.push('/auth/terms')}
+              className="text-white/85 text-[13px] underline underline-offset-4 hover:text-white transition"
             >
-              이미 계정이 있나요? 로그인
+              약관 동의 및 가입 시작하기
             </button>
           </div>
         </div>

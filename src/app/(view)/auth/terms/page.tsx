@@ -1,7 +1,10 @@
 'use client';
 
-import { Check, ChevronLeft } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { completeSignupAction } from '@/features/auth/actions/auth';
+import ErrorModal from '@/features/common/ErrorModal';
+import { createClient } from '@/utils/supabase/client';
+import { Check } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
 
 /* ─────────────────── 이용약관 ─────────────────── */
@@ -143,46 +146,96 @@ export default function TermsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('terms');
   const [agreedTerms, setAgreedTerms] = useState(false);
   const [agreedPrivacy, setAgreedPrivacy] = useState(false);
-  const canProceed = agreedTerms && agreedPrivacy;
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const supabase = createClient();
+  const pathname = usePathname();
+  const canProceed = agreedTerms && agreedPrivacy && !isSubmitting;
   const allAgreed = agreedTerms && agreedPrivacy;
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const handleCompleteSignup = async () => {
+    if (!canProceed) return;
+    setIsSubmitting(true);
+
+    try {
+      const fd = new FormData();
+      const res = await completeSignupAction(fd);
+      if (!res.ok) {
+        setErrorMsg(res.message);
+        console.log(res.message);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 성공 시 홈으로 이동
+      router.push('/home');
+    } catch (err: any) {
+      console.error('completeSignupAction error:', err);
+      setErrorMsg(err.message || '가입 처리 중 오류가 발생했습니다.');
+      setIsSubmitting(false);
+    }
+  };
+
+  // const handleCompleteSignup = async () => {
+  //   if (!canProceed) return;
+
+  //   setIsSubmitting(true);
+  //   try {
+  //     // 1. 현재 세션 확인
+  //     const {
+  //       data: { user },
+  //     } = await supabase.auth.getUser();
+
+  //     if (!user) {
+  //       router.push('/start');
+  //       return;
+  //     }
+
+  //     // 2. 이미 가입된 유저인지 체크 (중복 방지)
+  //     const { data: existingUser } = await supabase
+  //       .from('users')
+  //       .select('user_id')
+  //       .eq('auth_user_id', user.id)
+  //       .maybeSingle();
+
+  //     if (existingUser) {
+  //       router.push('/home');
+  //       return;
+  //     }
+
+  //     // 3. DB에 유저 정보 삽입
+  //     const provider = user.app_metadata?.provider as string;
+  //     const nickname = user.user_metadata?.nickname || user.user_metadata?.name;
+
+  //     const { error: insertErr } = await supabase.from('users').insert({
+  //       auth_user_id: user.id,
+  //       email: user.email,
+  //       signup_method: provider || 'email', // provider가 없으면 이메일 가입으로 간주
+  //       nickname: nickname || user.email?.split('@')[0],
+  //     });
+
+  //     if (insertErr) {
+  //       console.error('Signup DB Error:', insertErr);
+  //       alert('가입 처리 중 오류가 발생했습니다.');
+  //       return;
+  //     }
+
+  //     // 4. 가입 완료 후 홈으로 이동
+  //     router.push('/home');
+  //   } catch (err) {
+  //     console.error('Signup unexpected error:', err);
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const sections = activeTab === 'terms' ? TERMS_SECTIONS : PRIVACY_SECTIONS;
 
   return (
-    /* 전체 화면 고정: flex column, overflow hidden */
-    <div
-      className="fixed inset-0 flex flex-col text-white"
-      style={{
-        background: 'linear-gradient(180deg, var(--bg-1) 0%, var(--bg-0) 100%)',
-      }}
-    >
-      {/* 배경 글로우 */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute inset-0 -z-10"
-        style={{
-          background:
-            'radial-gradient(900px 520px at 50% 100%, rgba(56,189,248,0.07), transparent 60%),' +
-            'radial-gradient(700px 400px at 15% 10%, rgba(130,70,255,0.07), transparent 62%)',
-        }}
-      />
-
-      {/* ── Sticky 헤더 ── */}
-      <header className="shrink-0 border-b border-white/8 bg-[rgba(5,11,28,0.85)] backdrop-blur-md">
-        <div className="relative flex h-14 items-center px-4">
-          <button
-            onClick={() => router.back()}
-            className="flex items-center justify-center rounded-full p-2 transition-colors hover:bg-white/10"
-            aria-label="뒤로가기"
-          >
-            <ChevronLeft size={22} />
-          </button>
-          <span className="absolute left-1/2 -translate-x-1/2 text-[15px] font-semibold tracking-tight text-white/90">
-            서비스 약관
-          </span>
-        </div>
-
-        {/* 탭 */}
+    /* Fills the flex-1 space in AuthLayout, ensuring internal scroll works */
+    <div className="flex-1 flex flex-col min-h-0 text-white relative">
+      {/* 탭 바: 상단 고정 (Sticky within this container) */}
+      <div className="shrink-0 z-20 border-b border-white/8 bg-[rgba(5,11,28,0.85)] backdrop-blur-md">
         <div className="flex w-full">
           {(['terms', 'privacy'] as Tab[]).map((tab) => {
             const label = tab === 'terms' ? '이용약관' : '개인정보 처리방침';
@@ -193,7 +246,7 @@ export default function TermsPage() {
                 key={tab}
                 onClick={() => setActiveTab(tab)}
                 className={[
-                  'relative flex flex-1 items-center justify-center gap-1.5 py-3 text-[13px] font-medium transition-colors',
+                  'relative flex flex-1 items-center justify-center gap-1.5 py-4 text-[13px] font-medium transition-colors',
                   isActive
                     ? 'text-sky-300'
                     : 'text-white/40 hover:text-white/65',
@@ -212,47 +265,45 @@ export default function TermsPage() {
             );
           })}
         </div>
-      </header>
+      </div>
 
       {/* ── 내부 스크롤 콘텐츠 ── */}
       <div className="flex-1 overflow-y-auto scroll-hide">
-        <div className="mx-auto w-full max-w-[480px] px-4 pt-4 pb-4 space-y-2.5">
+        <div className="w-full px-5 pt-5 pb-5 space-y-3">
           {sections.map((s, idx) => (
             <section
               key={s.id}
               id={s.id}
-              className="rounded-[14px] border border-white/8 bg-white/[0.035] px-4 py-4 shadow-[0_4px_16px_rgba(0,0,0,0.18)]"
+              className="rounded-[16px] border border-white/8 bg-white/[0.04] px-5 py-5 shadow-[0_4px_16px_rgba(0,0,0,0.2)]"
             >
-              <div className="mb-2 flex items-center gap-2.5">
-                <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-[rgba(56,189,248,0.12)] border border-[rgba(56,189,248,0.18)] text-[10px] font-bold text-sky-300">
+              <div className="mb-3 flex items-center gap-3">
+                <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-[rgba(56,189,248,0.15)] border border-[rgba(56,189,248,0.2)] text-[11px] font-bold text-sky-300">
                   {idx + 1}
                 </span>
-                <h2 className="text-[13px] font-semibold text-white/85">
+                <h2 className="text-[14px] font-bold text-white/90">
                   {s.title}
                 </h2>
               </div>
-              <div className="mb-2 h-px bg-white/7" />
-              <p className="whitespace-pre-line text-[12px] leading-[1.75] text-white/52">
+              <div className="mb-3 h-px bg-white/10" />
+              <p className="whitespace-pre-line text-[13px] leading-[1.8] text-white/60">
                 {s.content}
               </p>
             </section>
           ))}
-
-          {/* 하단 여백 (fixed bar 높이만큼) */}
-          <div className="h-2" />
+          <div className="h-4" />
         </div>
       </div>
 
       {/* ── Fixed 하단 동의 바 ── */}
-      <div className="shrink-0 border-t border-white/8 bg-[rgba(5,11,28,0.90)] backdrop-blur-xl px-4 pt-3 pb-[max(16px,env(safe-area-inset-bottom))]">
-        <div className="mx-auto w-full max-w-[480px] space-y-2">
+      <div className="shrink-0 border-t border-white/10 bg-[rgba(5,11,28,0.92)] backdrop-blur-2xl px-5 pt-4 pb-[max(20px,env(safe-area-inset-bottom))]">
+        <div className="space-y-3">
           {/* 전체 동의 */}
           <div
             className={[
-              'flex items-center gap-3 rounded-[12px] px-4 py-3 transition-colors cursor-pointer',
+              'flex items-center gap-4 rounded-2xl px-5 py-4 transition-all duration-300 cursor-pointer',
               allAgreed
-                ? 'bg-sky-400/8 border border-sky-400/15'
-                : 'bg-white/4 border border-white/8',
+                ? 'bg-sky-400/10 border border-sky-400/20'
+                : 'bg-white/5 border border-white/10',
             ].join(' ')}
             onClick={() => {
               setAgreedTerms(!allAgreed);
@@ -266,37 +317,36 @@ export default function TermsPage() {
                 setAgreedPrivacy(v);
               }}
             />
-            <span className="text-[13px] font-semibold text-white/80">
-              전체 동의
-            </span>
-            <span className="ml-auto text-[11px] text-white/35">
-              이용약관 + 개인정보
-            </span>
+            <div className="flex flex-col">
+              <span className="text-[14px] font-bold text-white/90">
+                약관 전체 동의하기
+              </span>
+              <span className="text-[11px] text-white/40">
+                필수 이용약관 및 개인정보 처리방침
+              </span>
+            </div>
           </div>
 
           {/* 개별 동의 2개 */}
-          <div className="flex gap-2">
+          <div className="flex gap-3 px-1">
             {/* 이용약관 */}
             <div
-              className="flex flex-1 items-center gap-2 rounded-[10px] bg-white/[0.03] border border-white/8 px-3 py-2.5 cursor-pointer"
+              className="flex flex-1 items-center gap-2.5 cursor-pointer"
               onClick={() => setAgreedTerms(!agreedTerms)}
             >
-              <Checkbox checked={agreedTerms} onChange={setAgreedTerms} />
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] text-sky-300/75 font-medium">
-                  [필수]
-                </span>
-                <span className="text-[11.5px] text-white/65 truncate">
-                  이용약관
-                </span>
+              <div className="scale-90">
+                <Checkbox checked={agreedTerms} onChange={setAgreedTerms} />
               </div>
+              <span className="text-[12px] text-white/60 font-medium">
+                이용약관 <span className="text-sky-300/60 ml-0.5">(필수)</span>
+              </span>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTab('terms');
                 }}
-                className="ml-auto text-[10px] text-white/30 underline underline-offset-2 hover:text-white/55 transition shrink-0"
+                className="ml-auto text-[11px] text-white/30 underline underline-offset-2 hover:text-white/55 transition"
               >
                 보기
               </button>
@@ -304,25 +354,22 @@ export default function TermsPage() {
 
             {/* 개인정보 처리방침 */}
             <div
-              className="flex flex-1 items-center gap-2 rounded-[10px] bg-white/[0.03] border border-white/8 px-3 py-2.5 cursor-pointer"
+              className="flex flex-1 items-center gap-2.5 cursor-pointer"
               onClick={() => setAgreedPrivacy(!agreedPrivacy)}
             >
-              <Checkbox checked={agreedPrivacy} onChange={setAgreedPrivacy} />
-              <div className="flex flex-col min-w-0">
-                <span className="text-[10px] text-sky-300/75 font-medium">
-                  [필수]
-                </span>
-                <span className="text-[11.5px] text-white/65 truncate">
-                  개인정보
-                </span>
+              <div className="scale-90">
+                <Checkbox checked={agreedPrivacy} onChange={setAgreedPrivacy} />
               </div>
+              <span className="text-[12px] text-white/60 font-medium">
+                개인정보 <span className="text-sky-300/60 ml-0.5">(필수)</span>
+              </span>
               <button
                 type="button"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveTab('privacy');
                 }}
-                className="ml-auto text-[10px] text-white/30 underline underline-offset-2 hover:text-white/55 transition shrink-0"
+                className="ml-auto text-[11px] text-white/30 underline underline-offset-2 hover:text-white/55 transition"
               >
                 보기
               </button>
@@ -330,25 +377,32 @@ export default function TermsPage() {
           </div>
 
           {/* CTA 버튼 */}
-          <button
-            onClick={() => canProceed && router.push('/auth/signup')}
-            disabled={!canProceed}
-            className={[
-              'relative w-full h-[50px] rounded-[13px] text-[15px] font-semibold',
-              'flex items-center justify-center overflow-hidden transition-all duration-200',
-              'border active:scale-[0.99]',
-              canProceed
-                ? 'bg-[linear-gradient(180deg,var(--cta-from)_0%,var(--cta-to)_100%)] border-white/14 text-white shadow-[0_12px_32px_rgba(0,0,0,0.3)] hover:brightness-110'
-                : 'bg-white/5 border-white/8 text-white/28 cursor-not-allowed',
-            ].join(' ')}
+          <form
+            action={handleCompleteSignup}
+            className="flex-1 flex flex-col min-h-0"
           >
-            {canProceed && (
-              <span className="absolute inset-0 -translate-x-full bg-[linear-gradient(120deg,transparent,rgba(255,255,255,0.12),transparent)] animate-[shimmer_3s_linear_infinite]" />
-            )}
-            동의하고 시작하기
-          </button>
+            <button
+              disabled={!canProceed}
+              className={[
+                'relative w-full h-[54px] rounded-2xl text-[16px] font-bold tracking-tight',
+                'flex items-center justify-center overflow-hidden transition-all duration-300',
+                'active:scale-[0.98]',
+                canProceed
+                  ? 'bg-[linear-gradient(180deg,var(--cta-from)_0%,var(--cta-to)_100%)] border-white/14 text-white shadow-[0_12px_32px_rgba(0,0,0,0.3)] hover:brightness-110'
+                  : 'bg-white/5 border border-white/5 text-white/20 cursor-not-allowed',
+              ].join(' ')}
+            >
+              {canProceed && (
+                <span className="absolute inset-0 -translate-x-full bg-gradient-to-r from-transparent via-white/30 to-transparent " />
+              )}
+              동의하고 시작하기
+            </button>
+          </form>
         </div>
       </div>
+      {errorMsg && (
+        <ErrorModal message={[errorMsg]} onClose={() => setErrorMsg(null)} />
+      )}
     </div>
   );
 }

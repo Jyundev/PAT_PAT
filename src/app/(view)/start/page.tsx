@@ -22,7 +22,7 @@ function OnboardingContent() {
     INVALID_CODE: '잘못된 접근입니다.',
   };
 
-  const errorMessage = errorCode
+  let errorMessage = errorCode
     ? messages[errorCode] || '알 수 없는 오류가 발생했습니다.'
     : null;
 
@@ -63,7 +63,14 @@ function OnboardingContent() {
         }}
       />
 
-      {errorMessage && <ErrorModal message={[errorMessage]} url={pathname} />}
+      {errorMessage && (
+        <ErrorModal
+          message={[errorMessage]}
+          onClose={() => {
+            errorMessage = null;
+          }}
+        />
+      )}
 
       <img
         src="/images/icon/lumi/lumi_start.svg"

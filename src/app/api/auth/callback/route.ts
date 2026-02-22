@@ -42,23 +42,15 @@ export async function GET(request: NextRequest) {
         .from('users')
         .select('user_id')
         .eq('auth_user_id', user.id)
-        .maybeSingle(); // .single() 대신 .maybeSingle() 사용 추천
+        .maybeSingle();
 
-      // selectErr가 있고, 데이터가 정말 없는 경우가 아니라면(진짜 에러라면) 예외 처리
       if (selectErr) throw mapSupabaseError(selectErr);
 
       if (!existingUser) {
-        // [회원가입 로직] DB에 유저가 없는 경우
-        const { error: insertErr } = await supabase.from('users').insert({
-          auth_user_id: user.id,
-          email: user.email,
-          signup_method: provider,
-          nickname,
-          // 가입 시에만 넣을 데이터 추가 (예: 포인트, 마케팅 수신동의 등)
-        });
-        if (insertErr) throw mapSupabaseError(insertErr);
-
-        console.log('신규 회원가입 발생!');
+        // [회원가입 절차 개입] DB에 유저가 없는 경우 -> 약관 동의 페이지로 리다이렉트
+        // 주의: 이 시점에는 Supabase Auth 세션은 생성된 상태입니다.
+        console.log('신규 사용자 감지: 약관 동의 페이지로 리다이렉트');
+        return NextResponse.redirect(new URL('/auth/terms', origin));
       } else {
         // [로그인 로직] 이미 유저가 있는 경우
         const { error: updateErr } = await supabase
@@ -76,7 +68,7 @@ export async function GET(request: NextRequest) {
     const nextParam = url.searchParams.get('next');
     const targetPath =
       nextParam && SAFE_PATHS.has(nextParam) ? nextParam : AFTER_LOGIN;
-    // 성공 리다이렉트
+    // 성공 리다이렉트 (기존 유저)
     return NextResponse.redirect(new URL(targetPath, origin));
   } catch (err: any) {
     // 5) 모든 에러가 모이는 곳 (에러 처리 통합)
