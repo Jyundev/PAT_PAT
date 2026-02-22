@@ -117,7 +117,7 @@ export default function SignInPage() {
           <div className="mt-4 text-center">
             <button
               type="button"
-              onClick={() => router.push('/auth/email')}
+              onClick={() => router.push('/auth/terms')}
               className="text-white/85 text-[13px] underline underline-offset-4 hover:text-white transition"
             >
               계정이 없나요? 이메일로 가입하기

@@ -1,15 +1,11 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
-
 interface ErrorModalProps {
   message: string | string[]; // 배열과 문자열 모두 대응 가능하게 개선
-  url: string;
+  onClose: () => void;
 }
 
-export default function ErrorModal({ message, url }: ErrorModalProps) {
-  const router = useRouter();
-
+export default function ErrorModal({ message, onClose }: ErrorModalProps) {
   // 메시지가 배열로 들어올 경우 첫 번째 항목을 사용하거나 조인
   const displayMessage = Array.isArray(message) ? message[0] : message;
 
@@ -27,7 +23,7 @@ export default function ErrorModal({ message, url }: ErrorModalProps) {
             다시 한 번 시도해 주시겠어요?
           </p>
           <button
-            onClick={() => router.replace(url)} // 쿼리 파라미터가 없는 원래 URL로 교체하여 모달 닫기
+            onClick={onClose} // 쿼리 파라미터가 없는 원래 URL로 교체하여 모달 닫기
             className="w-full rounded-full bg-[#FEE300] py-4 font-bold text-[#353C3B] hover:bg-[#F0D500] active:scale-[0.98] transition-all"
           >
             확인
